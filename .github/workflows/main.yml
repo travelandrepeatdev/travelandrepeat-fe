@@ -1,4 +1,4 @@
-name: CI/CD Docker Deploy to VPS
+name: CI/CD GHCR Deploy to VPS
 
 on:
   push:
@@ -13,31 +13,36 @@ jobs:
       # Checkout
       - uses: actions/checkout@v4
 
-      # Login Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Build tags (latest, fecha, sha)
+      # Generate version tags
       - name: Generate version tags
         id: vars
         run: |
           DATE_TAG=$(date +'%Y.%m.%d')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
           echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
 
-      # Build + Push docker image
-      - name: Build & Push Docker Image
+      # Login to GHCR
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # Build and push Docker image to GHCR
+      - name: Build & Push Image to GHCR
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:${{ env.DATE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
+            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
 
-      # Deploy a VPS vía SSH
+      # Deploy to VPS
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -45,8 +50,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            echo "== Pulling latest Docker image =="
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:latest
+            echo "== Logging into GHCR =="
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            echo "== Pulling latest image =="
+            docker pull ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
 
             echo "== Stopping old container =="
             docker stop tyr-fe || true
@@ -58,6 +66,6 @@ jobs:
             docker run -d \
               --name tyr-fe \
               -p 80:3000 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:latest
+              ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
 
-            echo "== Deployment completed =="
+            echo "== Deployment completed successfully =="
