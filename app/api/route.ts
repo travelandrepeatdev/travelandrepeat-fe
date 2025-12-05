@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server"
 
+// Health check endpoint localhost/api GET
+export async function GET() {
+  return NextResponse.json({ status: 'ok' }, { status: 200 })
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
