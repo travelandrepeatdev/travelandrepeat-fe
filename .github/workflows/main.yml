@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  login-build-push-pull-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
           username: ${{ github.repository_owner }} # Assuming Docker Hub username is the same as GitHub owner
           password: ${{ secrets.DOCKERHUB_TOKEN }} # Docker Hub token stored in GitHub Secrets, 90 days expiry
 
-      # Build and push Docker image
+      # Build and push Docker hub image
       - name: Build & Push Image
         uses: docker/build-push-action@v6
         with:
@@ -49,6 +49,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            echo "== Logging into Docker Hub =="
+            docker login -u travelandrepeatdev --password-stdin
+
             echo "== Pulling latest image =="
             docker pull ${{ github.repository_owner }}/travelandrepeatdev:latest
 
