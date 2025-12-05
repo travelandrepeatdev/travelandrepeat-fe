@@ -45,14 +45,12 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            # GHCR
             ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
             ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
             ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
-            # DOCKER HUB
-            ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:${{ env.DATE_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/travelandrepeatdev:${{ env.SHORT_SHA }}
+            ${{ github.repository_owner }}/travelandrepeatdev:latest
+            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
+            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
 
       # Deploy to VPS
       - name: Deploy to VPS via SSH
