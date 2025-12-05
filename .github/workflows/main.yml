@@ -1,4 +1,4 @@
-name: CI/CD Docker Deploy to VPS
+name: CI/CD GHCR Deploy to VPS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  login-build-push-pull-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }} # Use repository owner as username
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
 
       # Build and push Docker image to GHCR
@@ -42,7 +42,7 @@ jobs:
             ${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
             ${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
 
-      # Deploy to VPS via SSH
+      # Deploy to VPS
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             echo "== Logging into GHCR =="
-            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             echo "== Pulling latest image =="
             docker pull ${{ github.repository_owner }}/travelandrepeatdev:latest
@@ -64,7 +64,6 @@ jobs:
 
             echo "== Starting new container =="
             docker run -d \
-              --name tyr-fe \
               --hostname tyr-fe \
               -p 80:3000 \
               ${{ github.repository_owner }}/travelandrepeatdev:latest
