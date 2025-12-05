@@ -22,16 +22,15 @@ jobs:
           echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
 
-      # Login to GHCR
-      - name: Login to GHCR
+      # Login Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          username: ${{ github.repository_owner }} # Assuming Docker Hub username is the same as GitHub owner
+          password: ${{ secrets.DOCKERHUB_TOKEN }} # Docker Hub token stored in GitHub Secrets, 90 days expiry
 
-      # Build and push Docker image to GHCR
-      - name: Build & Push Image to GHCR
+      # Build and push Docker image
+      - name: Build & Push Image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -50,9 +49,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            echo "== Logging into GHCR =="
-            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-
             echo "== Pulling latest image =="
             docker pull ${{ github.repository_owner }}/travelandrepeatdev:latest
 
