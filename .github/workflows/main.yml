@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             echo "== Logging into GHCR =="
-            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin
 
             echo "== Pulling latest image =="
             docker pull ${{ github.repository_owner }}/travelandrepeatdev:latest
