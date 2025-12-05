@@ -38,12 +38,12 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
+            ${{ github.repository_owner }}/travelandrepeatdev:latest
+            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
+            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
 
       # Deploy to VPS
-      - name: Deploy to VPS via SSH
+      - name: Deploy to VPS via GHRC
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -54,7 +54,7 @@ jobs:
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             echo "== Pulling latest image =="
-            docker pull ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
+            docker pull ${{ github.repository_owner }}/travelandrepeatdev:latest
 
             echo "== Stopping old container =="
             docker stop tyr-fe || true
@@ -65,7 +65,8 @@ jobs:
             echo "== Starting new container =="
             docker run -d \
               --name tyr-fe \
+              --hostname tyr-fe \
               -p 80:3000 \
-              ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
+              ${{ github.repository_owner }}/travelandrepeatdev:latest
 
             echo "== Deployment completed successfully =="
