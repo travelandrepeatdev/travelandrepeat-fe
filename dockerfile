@@ -2,11 +2,9 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copiar sólo los archivos necesarios para instalar dependencias
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copiar todo el proyecto y construir
 COPY . .
 RUN npm run build
 
@@ -19,7 +17,7 @@ ENV NODE_ENV=production
 # Instalar Nginx
 RUN apk update && apk add --no-cache nginx
 
-# Crear directorio necesario para pid
+# Crear directorio para PID
 RUN mkdir -p /run/nginx
 
 # Copiar archivos de la app
@@ -29,17 +27,17 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
-# ---------- NGINX CONFIG ----------
-# Agregamos Nginx con hostname "tyr-fe"
-RUN mkdir -p /etc/nginx/sites-enabled
+# Crear configuración Nginx en puerto 3000
+RUN mkdir -p /etc/nginx/conf.d
 
-COPY <<EOF /etc/nginx/sites-enabled/tyr-fe.conf
+COPY <<EOF /etc/nginx/conf.d/default.conf
 server {
-    listen 80;
+    listen 3000;
+
     server_name tyr-fe;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -49,12 +47,8 @@ server {
 }
 EOF
 
-# Sustituir default.conf
-RUN rm -f /etc/nginx/conf.d/default.conf
+# EXPOSE solo tu puerto 3000
+EXPOSE 3000
 
-# Exponer los puertos
-EXPOSE 80
-
-# ---------- STARTUP ----------
-# Inicia Node + Nginx
-CMD ["sh", "-c", "nginx && npm run start"]
+# Startup: Next.js en 3001 + Nginx en 3000
+CMD ["sh", "-c", "PORT=3001 npm run start & nginx -g 'daemon off;'"]
