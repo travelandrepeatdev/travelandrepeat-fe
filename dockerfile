@@ -1,5 +1,5 @@
 # Etapa 1: Build o create Image
-FROM node:22-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copiar sólo los archivos necesarios para instalar dependencias
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 # Etapa 2: Runtime (Producción)
-FROM node:22-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -26,7 +26,7 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 # Si usas TypeScript, no necesitas copiar el código fuente
 # ya está compilado en .next
 
-EXPOSE 3000
+EXPOSE 80
 
 # Iniciar Next.js en modo producción
 CMD ["npm", "run", "start"]
