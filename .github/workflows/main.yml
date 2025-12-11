@@ -35,7 +35,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ github.repository_owner }} # assuming same username as GHCR
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_USERNAME_FORGITHUB }}
 
       # Build and push Docker image to GHCR
       - name: Build & Push Image to GHCR
