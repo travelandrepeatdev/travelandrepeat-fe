@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Error del Servidor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #9473d4 0%, #7962a8 50%, #2ea1bf 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1a1a1a;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 60px 40px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+    h1 {
+      font-family: 'Poppins', serif;
+      font-size: 120px;
+      font-weight: 700;
+      color: #9473d4;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+    h2 {
+      font-family: 'Poppins', serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #9473d4, #7962a8);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(148, 115, 212, 0.3);
+    }
+    @media (max-width: 640px) {
+      .container {
+        padding: 40px 24px;
+      }
+      h1 {
+        font-size: 80px;
+      }
+      h2 {
+        font-size: 24px;
+      }
+      p {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/assets/LOGO-EVA-CIRCULO.png" alt="Travel Repeat Logo" width=180 height=180 />
+    <h1>500</h1>
+    <h2>Error del Servidor</h2>
+    <p>Algo salió mal en nuestros servidores. Nuestro equipo está trabajando para solucionar el problema. Por favor, intenta de nuevo en unos minutos.</p>
+    <a href="/" class="button">Volver al Inicio</a>
+  </div>
+</body>
+</html>
