@@ -8,6 +8,8 @@ RUN npm install
 
 # Copiar todo el proyecto y construir
 COPY . .
+ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 RUN npm run build
 
 # Etapa 2: Runtime (Producción)

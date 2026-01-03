@@ -21,34 +21,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Quick Links 
-          <div>
-            <h3 className="font-serif text-base font-semibold text-foreground mb-4">Enlaces rápidos</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Paquetes Disney
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Universal Studios
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Cruceros
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Tours y eventos
-                </a>
-              </li>
-            </ul>
-          </div>
-          */}
-
           {/* Contact Info */}
           <div>
             <h3 className="font-serif text-base font-semibold text-foreground mb-4">
@@ -118,16 +90,7 @@ export function Footer() {
             © {new Date().getFullYear()} Travel & Repeat. Todos los derechos
             reservados.
           </p>
-          {/* 
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-primary transition-colors">
-              Políticas de privacidad
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Términos y condiciones
-            </a>
-          </div> 
-          */}
+          
         </div>
       </div>
     </footer>

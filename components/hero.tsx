@@ -1,8 +1,6 @@
 "use client"
 
-// import { Button } from "@/components/ui/button"
-import { Sparkles } from "lucide-react" // ArrowRight
-import { CastleIcon } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react"
 
 export function Hero() {
   return (
@@ -11,13 +9,7 @@ export function Hero() {
         <div className="mx-auto max-w-4xl text-center">
 
           <div className="mb-8 animate-scale-in flex justify-center leading-7 tracking-normal">
-            <img
-              src="/LOGO-EVA-CIRCULO.png"
-              alt="Travel Repeat Logo"
-              width={180}
-              height={180}
-              className="transition-transform duration-500 hover:scale-110"
-            />
+            <img src="/LOGO-EVA-CIRCULO.png" alt="Travel Repeat Logo" width={180} height={180} className="transition-transform duration-500 hover:scale-110"/>
           </div>
 
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-primary">
@@ -26,7 +18,7 @@ export function Hero() {
           </div>
 
           {/* Variante A del Hero */}
-          {/* <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
+          <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
             Convierte tus sueños en{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               vacaciones inolvidables
@@ -36,51 +28,8 @@ export function Hero() {
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl leading-relaxed mb-8">
             Expertos en paquetes Disney, Universal Studios, cruceros y más. Te acompañamos en cada paso para crear la
             experiencia perfecta.
-          </p> */}
-          <div>
-            <CastleIcon className="inline-block h-20 w-20 text-primary animate-bounce" />
-          </div>
-          
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
-            "En Construcción..."
-            <br />
-            🚧
-            <br />
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Estamos creando algo increíble para ti!
-            </span>
-          </h1>
-
-          {/* 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent">
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              Cotización personalizada
-          </Button>
-            
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 group">
-              Cotizar mi viaje
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent">
-              Ver destinos populares
-            </Button> 
-            
-          </div>
-          */}
-
-          {/* Variante B del Hero (comentada) */}
-          {/* 
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
-            Vive la <span className="text-primary">magia</span> de viajar con{' '}
-            <span className="text-accent">expertos</span>
-          </h1>
-          
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl leading-relaxed mb-8">
-            Más de 10 años creando experiencias únicas en Disney, Universal y destinos alrededor del mundo. 
-            Tu viaje perfecto comienza aquí.
           </p>
-          */}
+
         </div>
       </div>
 

@@ -53,15 +53,8 @@ export function Header() {
             </a>
           ))}
 
-          <Button size="sm" 
-            //className="bg-accent hover:bg-accent/90" 
-            asChild
-            className="opacity-50 cursor-not-allowed bg-accent hover:bg-accent/70 py-0 px-3"
-            >
-            <Link 
-              onClick={ (event) => event.preventDefault() }
-              href="/cotizacion">Formulario de cotización
-            </Link>
+          <Button size="sm" className="bg-accent hover:bg-accent/90" asChild>
+            <Link href="/cotizacion">Formulario de cotización</Link>
           </Button>
           <CurrencyIndicator />
         </nav>
@@ -100,16 +93,9 @@ export function Header() {
               </a>
             ))}
             
-            <Button size="sm" 
-              //className="bg-accent hover:bg-accent/90 w-full"
-              className="opacity-50 cursor-not-allowed bg-accent hover:bg-accent/70 w-full"
-            >
-              <Link 
-                onClick={ (event) => event.preventDefault() }
-                href="/cotizacion">Formulario de cotización
-              </Link>
-            </Button>
-
+            <Link href="/cotizacion">
+            <Button size="sm" className="bg-accent hover:bg-accent/90 w-full">Formulario de cotización</Button>
+            </Link>
             <CurrencyIndicator />
 
           </nav>

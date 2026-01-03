@@ -9,9 +9,7 @@ export function CurrencyIndicator() {
   return (
     <div className="flex items-center gap-2 rounded-full bg-secondary/50 px-3 py-1.5 text-xs font-medium justify-center">
       <TrendingUp className="h-3.5 w-3.5 text-primary" />
-      <span className="text-foreground/80"> USD/MXN: 
-        {/* <span className="font-semibold text-primary">${usdToMxn}</span> */}
-        <span className="font-semibold text-primary">$--</span>
+      <span className="text-foreground/80"> USD/MXN: ${usdToMxn}
       </span>
     </div>
   )

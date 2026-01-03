@@ -1,6 +1,5 @@
 import { QuoteHeader } from "@/components/quote-header"
 import { QuoteForm } from "@/components/quote-form"
-import { QuoteBenefits } from "@/components/quote-benefits"
 import { Footer } from "@/components/footer"
 import { Benefits } from "@/components/benefits"
 
@@ -26,9 +25,6 @@ export default function QuotePage() {
           </div>
 
           <QuoteForm />
-
-          <QuoteBenefits />
-          <Benefits />
         </div>
       </main>
       <Footer />

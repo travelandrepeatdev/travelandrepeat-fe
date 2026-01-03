@@ -1,6 +1,5 @@
 import { CheckCircle2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-//import Image from "next/image"
 
 export function About() {
   return (
@@ -9,15 +8,6 @@ export function About() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           <div className="relative">
-          {/* 
-          <Image
-          src="/LOGO-EVA-CIRCULO-GOTA-DE-AGUA.png"
-          alt=""
-          fill
-          className="object-contain opacity-60 pointer-events-none"
-          /> 
-          */}
-          
 
           <div className="relative z-10">
             <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl mb-6">
@@ -57,11 +47,7 @@ export function About() {
 
           <Card className="overflow-hidden border-border/50">
             <CardContent className="p-0">
-              <img
-                src="/IMG_0188.PNG"
-                alt="Agente de viajes profesional"
-                className="w-full h-full object-cover"
-              />
+              <img src="/IMG_0188.PNG" alt="Agente de viajes profesional" className="w-full h-full object-cover" />
             </CardContent>
           </Card>
         </div>
