@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import Link from "next/link";
 
 const destinations = [
   {
@@ -24,7 +30,7 @@ const destinations = [
     price: "1,099",
     image: "/universal-studios-orlando-wizarding-world.jpg",
     description:
-      "Vive la aventura en Unhgcvmhcjhtdjghc,jv,jhvmhgvcmbchgmv,jhv,jhv,jvb,jhvmhvmbgcmhgh,gn.kjb.vvhlhjkfjyhk iversal Studios y Islands of Adventure. Incluye acceso al mundo mágico de Harry Potter, hotel y boletos multi-parque.",
+      "Vive la aventura en Universal Studios y Islands of Adventure. Incluye acceso al mundo mágico de Harry Potter, hotel y boletos multi-parque.",
   },
   {
     id: 3,
@@ -80,30 +86,35 @@ const destinations = [
     description:
       "Relájate en las playas de Cancún con paquete todo incluido. Resort de lujo, comidas ilimitadas, bebidas y actividades recreativas.",
   },
-]
+];
 
 export function DestinationsCarousel() {
-  const [currentPage, setCurrentPage] = useState(0)
-  const [selectedDestination, setSelectedDestination] = useState<(typeof destinations)[0] | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedDestination, setSelectedDestination] = useState<
+    (typeof destinations)[0] | null
+  >(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const itemsPerPage = 3
-  const totalPages = Math.ceil(destinations.length / itemsPerPage)
+  const itemsPerPage = 3;
+  const totalPages = Math.ceil(destinations.length / itemsPerPage);
 
   const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % totalPages)
-  }
+    setCurrentPage((prev) => (prev + 1) % totalPages);
+  };
 
   const prevPage = () => {
-    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)
-  }
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
 
   const openDestinationDetails = (destination: (typeof destinations)[0]) => {
-    setSelectedDestination(destination)
-    setIsDialogOpen(true)
-  }
+    setSelectedDestination(destination);
+    setIsDialogOpen(true);
+  };
 
-  const currentDestinations = destinations.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+  const currentDestinations = destinations.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
 
   return (
     <section className="py-16 md:py-10 bg-muted/30">
@@ -140,7 +151,9 @@ export function DestinationsCarousel() {
                       <MapPin className="h-4 w-4" />
                       <span>{destination.location}</span>
                     </div>
-                    <h3 className="font-serif text-xl font-semibold text-foreground mb-4">{destination.name}</h3>
+                    <h3 className="font-serif text-xl font-semibold text-foreground mb-4">
+                      {destination.name}
+                    </h3>
                     <Button
                       variant="outline"
                       className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors bg-transparent"
@@ -172,7 +185,9 @@ export function DestinationsCarousel() {
                   key={idx}
                   onClick={() => setCurrentPage(idx)}
                   className={`h-2 rounded-full transition-all ${
-                    idx === currentPage ? "w-8 bg-primary" : "w-2 bg-border hover:bg-primary/50"
+                    idx === currentPage
+                      ? "w-8 bg-primary"
+                      : "w-2 bg-border hover:bg-primary/50"
                   }`}
                   aria-label={`Go to page ${idx + 1}`}
                 />
@@ -191,15 +206,19 @@ export function DestinationsCarousel() {
           </div>
         </div>
 
-       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent>
             {selectedDestination && (
               <div className="overflow-y-auto overflow-x-hidden px-6 py-4">
                 <DialogHeader className="space-y-2 mb-4">
-                  <DialogTitle className="font-serif text-2xl break-words pr-8">{selectedDestination.name}</DialogTitle>
+                  <DialogTitle className="font-serif text-2xl break-words pr-8">
+                    {selectedDestination.name}
+                  </DialogTitle>
                   <DialogDescription className="flex items-center gap-2 text-base">
                     <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span className="break-words overflow-wrap-anywhere">{selectedDestination.location}</span>
+                    <span className="break-words overflow-wrap-anywhere">
+                      {selectedDestination.location}
+                    </span>
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -218,9 +237,14 @@ export function DestinationsCarousel() {
                   <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs">
                     {selectedDestination.description}
                   </p>
-                  <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => setIsDialogOpen(false)}>
-                    <Link href="/cotizacion">Solicitar cotización</Link>
-                  </Button>
+                  <Link href="/cotizacion">
+                    <Button
+                      className="w-full bg-primary hover:bg-primary/90"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      Solicitar cotización
+                    </Button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -228,5 +252,5 @@ export function DestinationsCarousel() {
         </Dialog>
       </div>
     </section>
-  )
+  );
 }

@@ -1,7 +1,6 @@
 import { QuoteHeader } from "@/components/quote-header"
 import { QuoteForm } from "@/components/quote-form"
 import { Footer } from "@/components/footer"
-import { Benefits } from "@/components/benefits"
 
 export const metadata = {
   title: "Solicitar Cotización - Travel & Repeat",
