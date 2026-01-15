@@ -18,8 +18,7 @@ export default function QuotePage() {
               Solicita tu cotización personalizada
             </h1>
             <p className="text-lg text-muted-foreground text-pretty">
-              Completa el formulario y uno de nuestros agentes especializados te contactará con la mejor propuesta para
-              tu viaje soñado
+              Completa el formulario y en un momento te contactaré con la mejor propuesta para tu viaje
             </p>
           </div>
           <QuoteForm />

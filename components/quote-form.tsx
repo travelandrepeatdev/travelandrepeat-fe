@@ -247,7 +247,7 @@ export function QuoteForm() {
           <CardTitle className="font-serif text-2xl text-primary">
             2. Información del Viaje
           </CardTitle>
-          <CardDescription>Detalles de tu viaje soñado</CardDescription>
+          <CardDescription>Detalles de tu viaje</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
