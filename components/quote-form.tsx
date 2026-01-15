@@ -66,8 +66,6 @@ export function QuoteForm() {
       const elementTop = successMessageRef.current.offsetTop
       const offset = 100 // Espacio desde el top (puedes ajustarlo)
 
-      console.log("Scroll position:", elementTop - offset)
-
       window.scrollTo({
         top: elementTop - offset,
         behavior: "smooth",
@@ -88,7 +86,6 @@ export function QuoteForm() {
         console.log("Error al obtener el recaptcha");
         throw new Error("Configuración de seguridad incompleta")
       }
-      console.log("ReCaptcha : " + siteKey);
 
       const recaptchaToken = await new Promise<string>((resolve, reject) => {
         if (typeof window !== "undefined" && window.grecaptcha) {
@@ -96,6 +93,7 @@ export function QuoteForm() {
             window.grecaptcha.execute(siteKey, { action: "submit_quote" }).then(resolve).catch(reject)
           })
         } else {
+          console.log("Sistema de verificación no disponible");
           reject(new Error("Sistema de verificación no disponible"))
         }
       })
@@ -110,7 +108,6 @@ export function QuoteForm() {
         setError(response?.data?.message || "Error de servidor al enviar la cotización");
       }
 
-      console.log(response.data);
       setSubmitted(true);
     } catch (err) {
       console.error("Error al enviar cotización:", err)
