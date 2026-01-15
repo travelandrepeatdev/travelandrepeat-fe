@@ -23,9 +23,10 @@ export function CurrencyIndicator() {
       }
 
       try {
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         console.info("Fetching currency rate...");
         const response = await axios.get(
-          "http://localhost:8080/api/dollar/rate"
+          apiBaseUrl + "/api/dollar/rate"
         );
 
         if (response.data) {

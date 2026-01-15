@@ -82,6 +82,7 @@ export function QuoteForm() {
 
     try {
       const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       
       if (!siteKey) {
         console.log("Error al obtener el recaptcha");
@@ -99,7 +100,7 @@ export function QuoteForm() {
         }
       })
 
-      const response = await axios.post("http://localhost:8080/api/mail/sendQuotationForm", {
+      const response = await axios.post(apiBaseUrl + "/api/mail/sendQuotationForm", {
           ...formData,
           recaptchaToken,
       })
