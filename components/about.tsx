@@ -64,7 +64,7 @@ export function About() {
             <Card className="overflow-hidden border-border/50">
               <CardContent className="p-0">
                 <img
-                  src="/IMG_0188.PNG"
+                  src="/IMG_0188.webp"
                   alt="Agente de viajes profesional"
                   className="w-full h-full object-cover"
                 />
