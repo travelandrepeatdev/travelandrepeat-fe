@@ -1,4 +1,4 @@
-import { Sparkles, Building2, Ship, Compass, CalendarCheck, Plane } from "lucide-react"
+import { Sparkles, Building2, Ship, Compass, CalendarCheck, Plane, Hotel } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const services = [
@@ -6,7 +6,7 @@ const services = [
     icon: Sparkles,
     title: "Paquetes Disney",
     description:
-      "Experiencias mágicas en todos los parques Disney alrededor del mundo con acceso prioritario y beneficios exclusivos.",
+      "Experiencias mágicas en todos los parques Disney alrededor del mundo, con entradas, hospedaje y más.",
   },
   {
     icon: Building2,
@@ -20,8 +20,8 @@ const services = [
   },
   {
     icon: Compass,
-    title: "Tours & Eventos",
-    description: "Excursiones personalizadas, eventos especiales y experiencias VIP adaptadas a tus intereses.",
+    title: "Tours",
+    description: "Excursiones personalizadas y grupales adaptadas a tus intereses.",
   },
   {
     icon: CalendarCheck,
@@ -29,9 +29,9 @@ const services = [
     description: "Planificación completa de tu viaje con atención a cada detalle según tus preferencias.",
   },
   {
-    icon: Plane,
-    title: "Vuelos + Hoteles",
-    description: "Paquetes completos con los mejores precios en vuelos y hospedaje de calidad certificada.",
+    icon: Hotel,
+    title: "Hoteles",
+    description: "Paquetes completos con los mejores precios en hospedaje de calidad certificada.",
   },
 ]
 

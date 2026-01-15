@@ -22,7 +22,6 @@ export default function QuotePage() {
               tu viaje soñado
             </p>
           </div>
-
           <QuoteForm />
         </div>
       </main>

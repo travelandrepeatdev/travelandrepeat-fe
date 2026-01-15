@@ -24,8 +24,7 @@ export function Header() {
             <span className="font-serif text-xl font-bold text-primary">Travel & Repeat</span>
           </a>
 
-          <Button 
-            //className="bg-primary hover:login-foreground text-primary-foreground hover:scale-105 hover:shadow-lg py-0 px-3"
+          <Button
             className="opacity-50 cursor-not-allowed py-0 px-3"
             style={{ margin: `20px`,}}
             >

@@ -1,6 +1,6 @@
 "use client"
 
-import { Sparkles, ArrowRight } from "lucide-react"
+import { Sparkles } from "lucide-react"
 
 export function Hero() {
   return (
@@ -9,10 +9,10 @@ export function Hero() {
         <div className="mx-auto max-w-4xl text-center">
 
           <div className="mb-8 animate-scale-in flex justify-center leading-7 tracking-normal">
-            <img src="/LOGO-EVA-CIRCULO.png" alt="Travel Repeat Logo" width={180} height={180} className="transition-transform duration-500 hover:scale-110"/>
+            <img src="/LOGO-EVA-CIRCULO.png" alt="Travel Repeat Logo" width={180} height={180} className="transition-transform duration-500 hover:scale-120"/>
           </div>
 
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-primary">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-primary animate-bounce">
             <Sparkles className="h-4 w-4" />
             <span>Especialistas en experiencias mágicas</span>
           </div>

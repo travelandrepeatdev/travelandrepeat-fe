@@ -16,75 +16,12 @@ import Link from "next/link";
 const destinations = [
   {
     id: 1,
-    name: "Walt Disney World",
-    location: "Orlando, Florida",
-    price: "1,299",
-    image: "/disney-world-castle-magic-kingdom-sunset.jpg",
-    description:
-      "Experimenta la magia de Disney World con acceso a los 4 parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios y Animal Kingdom. Incluye hotel y boletos de parque.",
-  },
-  {
-    id: 2,
     name: "Universal Studios",
     location: "Orlando, Florida",
-    price: "1,099",
+    price: "-,---",
     image: "/universal-studios-orlando-wizarding-world.jpg",
     description:
-      "Vive la aventura en Universal Studios y Islands of Adventure. Incluye acceso al mundo mágico de Harry Potter, hotel y boletos multi-parque.",
-  },
-  {
-    id: 3,
-    name: "Disney Cruise Line",
-    location: "Caribbean Islands, Europe & Alaska",
-    price: "1,799",
-    image: "/luxury-cruise-ship-caribbean-sea-sunset.jpg",
-    description:
-      "Navega por las aguas cristalinas del Caribe visitando múltiples islas. Todo incluido con comidas gourmet, entretenimiento y excursiones.",
-  },
-  {
-    id: 4,
-    name: "Disneyland California",
-    location: "Anaheim, California",
-    price: "1,199",
-    image: "/disneyland-california-sleeping-beauty-castle.jpg",
-    description:
-      "Descubre donde comenzó la magia en Disneyland Park y Disney California Adventure. Incluye hotel en Anaheim y boletos de parque.",
-  },
-  {
-    id: 5,
-    name: "Universal Studios Hollywood",
-    location: "Los Angeles, California",
-    price: "899",
-    image: "/water-park-slides-tropical-orlando.jpg",
-    description:
-      "Disfruta de los mejores parques acuáticos como Volcano Bay, Aquatica y los parques Disney. Diversión refrescante para toda la familia.",
-  },
-  {
-    id: 6,
-    name: "Paquete Todo Incluido",
-    location: "Cancún, Puerto Vallarta - México",
-    price: "1,499",
-    image: "/cancun-resort-beach-turquoise-water.jpg",
-    description:
-      "Relájate en las playas de Cancún con paquete todo incluido. Resort de lujo, comidas ilimitadas, bebidas y actividades recreativas.",
-  },
-  {
-    id: 7,
-    name: "Viajes Internacionales",
-    location: "Europa, Colombia, Perú, Japón, China...",
-    price: "1,499",
-    image: "/cancun-resort-beach-turquoise-water.jpg",
-    description:
-      "Relájate en las playas de Cancún con paquete todo incluido. Resort de lujo, comidas ilimitadas, bebidas y actividades recreativas.",
-  },
-  {
-    id: 8,
-    name: "Chepe Express",
-    location: "Chihuahua - Los Mochis",
-    price: "1,499",
-    image: "/cancun-resort-beach-turquoise-water.jpg",
-    description:
-      "Relájate en las playas de Cancún con paquete todo incluido. Resort de lujo, comidas ilimitadas, bebidas y actividades recreativas.",
+      "Vive la aventura en Universal Studios y Islands of Adventure. Incluye acceso al mundo mágico de Harry Potter, hotel y boletos...",
   },
 ];
 
@@ -142,6 +79,11 @@ export function DestinationsCarousel() {
                       alt={destination.name}
                       className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                     />
+                    <div className="absolute bottom-4 left-4 pointer-events-none">
+                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
+                        Imagen Real
+                      </span>
+                    </div>
                     <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
                       Desde ${destination.price}
                     </div>
@@ -228,6 +170,11 @@ export function DestinationsCarousel() {
                       alt={selectedDestination.name}
                       className="object-cover w-full h-full"
                     />
+                    <div className="absolute bottom-4 left-4 pointer-events-none">
+                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
+                        Imagen Real
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-lg font-semibold text-purple-700 break-words">

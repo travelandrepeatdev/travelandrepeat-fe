@@ -87,7 +87,7 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col items-center gap-4 text-sm text-muted-foreground">
           <p>
-            © {new Date().getFullYear()} Travel & Repeat. Todos los derechos
+            © {new Date().getFullYear()} Travel & Repeat. Jalisco, Mexico. Todos los derechos
             reservados.
           </p>
           

@@ -40,9 +40,7 @@ export function CurrencyIndicator() {
     };
 
     fetchRate();
-
     const interval = setInterval(fetchRate, 60 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -55,7 +53,7 @@ export function CurrencyIndicator() {
       <TrendingUp className="h-3.5 w-3.5 text-primary" />
       <span className="text-foreground/80">
         {" "}
-        USD/MXN: <b>${usdToMxn}</b>
+        USD/MXN: <b>$ {usdToMxn}</b>
       </span>
     </div>
   );
