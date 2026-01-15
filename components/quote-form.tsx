@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
+import PhoneInput from "react-phone-number-input"
+import "react-phone-number-input/style.css"
 
 declare global {
   interface Window {
@@ -37,6 +39,8 @@ export function QuoteForm() {
     outDate: "",
     returnDate: "",
     areDatesFlexible: "false",
+    haveVisa: "",
+    havePassport: "",
     // Presupuesto & Prioridades
     budget: "",
     levelType: "estandar",
@@ -128,6 +132,13 @@ export function QuoteForm() {
     });
   };
 
+  const handlePhoneChange = (value: string | undefined) => {
+    setFormData({
+      ...formData,
+      phone: value || "",
+    })
+  }
+
   if (submitted) {
     return (
       <Card ref={successMessageRef} className="mx-auto max-w-2xl border-primary/20 bg-primary/5">
@@ -153,6 +164,8 @@ export function QuoteForm() {
                 outDate: "",
                 returnDate: "",
                 areDatesFlexible: "false",
+                haveVisa: "",
+                havePassport: "",
                 budget: "",
                 levelType: "estandar",
                 priority: "comodidad",
@@ -217,14 +230,14 @@ export function QuoteForm() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono *</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
+              <PhoneInput
+                international
+                defaultCountry="MX"
                 value={formData.phone}
-                onChange={handleChange}
+                onChange={handlePhoneChange}
                 required
-                placeholder="+52 123 456 7890"
+                placeholder="Ingresa número de teléfono"
+                className="phone-input-custom"
               />
             </div>
             <div className="space-y-2">
@@ -297,6 +310,36 @@ export function QuoteForm() {
               <option value="false">No</option>
               <option value="true">Sí</option>
             </select>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="have">Cuentan con Visa Vigente</Label>
+              <select
+              id="haveVisa"
+              name="haveVisa"
+              value={formData.haveVisa}
+              onChange={handleChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">Seleccionar...</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="havePassport">Cuentan con Pasaporte Vigente</Label>
+              <select
+              id="havePassport"
+              name="havePassport"
+              value={formData.havePassport}
+              onChange={handleChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option selected value="">Seleccionar...</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+            </div>
           </div>
         </CardContent>
       </Card>
