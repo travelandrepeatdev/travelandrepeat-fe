@@ -4,34 +4,39 @@ import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const STORAGE_KEY = "usd_mxn_rate";
+
 export function CurrencyIndicator() {
-  const [usdToMxn, setUsdToMxn] = useState("--.--");
+  const [usdToMxn, setUsdToMxn] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const isBusinessHour = () => {
-    const now = new Date();
-    const hour = now.getHours(); // 0–23
+    const hour = new Date().getHours();
     return hour >= 9 && hour < 18;
   };
 
   useEffect(() => {
+    const cached = sessionStorage.getItem(STORAGE_KEY);
+
+    if (cached) {
+      setUsdToMxn(cached);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchRate = async () => {
       if (!isBusinessHour()) {
-        console.info("Outside business hours (9am - 6pm), skipping fetch");
         setIsLoading(false);
         return;
       }
 
       try {
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        console.info("Fetching currency rate...");
-        const response = await axios.get(
-          apiBaseUrl + "/api/dollar/rate"
-        );
+        const { data } = await axios.get(`${apiBaseUrl}/api/dollar/rate`);
 
-        if (response.data) {
-          setUsdToMxn(response.data);
-          console.info("Currency rate fetched:", response.data);
+        if (data) {
+          sessionStorage.setItem(STORAGE_KEY, data);
+          setUsdToMxn(data);
         }
       } catch (error) {
         console.error("Error fetching currency rate:", error);
@@ -41,19 +46,16 @@ export function CurrencyIndicator() {
     };
 
     fetchRate();
-    const interval = setInterval(fetchRate, 60 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
-  if (!usdToMxn || isLoading) {
-    return "--.--";
+  if (isLoading || !usdToMxn) {
+    return <div className="text-xs text-muted-foreground">USD/MXN: --.--</div>;
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-full bg-secondary/50 px-3 py-1.5 text-xs font-medium justify-center">
+    <div className="flex items-center gap-2 rounded-full bg-secondary/50 px-3 py-1.5 text-xs font-medium">
       <TrendingUp className="h-3.5 w-3.5 text-primary" />
-      <span className="text-foreground/80">
-        {" "}
+      <span>
         USD/MXN: <b>$ {usdToMxn}</b>
       </span>
     </div>

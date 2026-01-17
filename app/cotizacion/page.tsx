@@ -1,6 +1,7 @@
 import { QuoteHeader } from "@/components/quote-header"
 import { QuoteForm } from "@/components/quote-form"
 import { Footer } from "@/components/footer"
+import RecaptchaRouterProvider from "@/components/recaptcha/RecaptchaRouterProvider"
 
 export const metadata = {
   title: "Solicitar Cotización - Travel & Repeat",
@@ -21,7 +22,9 @@ export default function QuotePage() {
               Completa el formulario y en un momento te contactaré con la mejor propuesta para tu viaje
             </p>
           </div>
-          <QuoteForm />
+          <RecaptchaRouterProvider>
+            <QuoteForm />
+          </RecaptchaRouterProvider>
         </div>
       </main>
       <Footer />

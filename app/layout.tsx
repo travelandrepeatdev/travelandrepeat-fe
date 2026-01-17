@@ -16,7 +16,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Travel & Repeat | Agente",
+  title: "Travel & Repeat | Agente de Viajes Independiente y Experto en Disney / Universal Studios",
   description:
     "Agente de viajes independiente especializado en paquetes Disney, Universal Studios, cruceros, tours y eventos. Atención personalizada y pagos flexibles.",
   keywords:
@@ -24,36 +24,18 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/plane.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/plane.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/plane.png",
-        type: "image/svg+xml",
+        url: "/favico.png",
+        type: "image/png",
       },
     ],
-    apple: "/plane.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
 export default function RootLayout({children}: Readonly<{children: React.ReactNode;}>) {
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   return (
-    <html lang="es" className="scroll-smooth">
-      <head>
-        {recaptchaSiteKey && (
-          <script
-            src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
-            async
-            defer
-          />
-        )}
-      </head>
+    <html lang="es" className="scroll-smooth" data-scroll-behavior="smooth">
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>
         {children}
       </body>

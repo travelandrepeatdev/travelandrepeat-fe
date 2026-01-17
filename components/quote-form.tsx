@@ -2,28 +2,28 @@
 
 import type React from "react";
 import { useEffect, useRef } from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
-import PhoneInput from "react-phone-number-input"
-import "react-phone-number-input/style.css"
-
-declare global {
-  interface Window {
-    grecaptcha: {
-      ready: (callback: () => void) => void
-      execute: (siteKey: string, options: { action: string }) => Promise<string>
-    }
-  }
-}
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { useRecaptcha } from "@/components/recaptcha/useRecaptcha";
+import { Loader2 } from "lucide-react";
 
 export function QuoteForm() {
+  const { getToken } = useRecaptcha();
+
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,24 +56,26 @@ export function QuoteForm() {
     tripTheme: "",
     // Comentarios
     comments: "",
-    recaptchaToken: ""
+    recaptchaToken: "",
   });
 
-  const isCommentsRequired = formData.tripType === "paquete-completo" || formData.tripType === "solo-tickets"
+  const isCommentsRequired =
+    formData.tripType === "paquete-completo" ||
+    formData.tripType === "solo-tickets";
 
   const commentsPlaceholder = isCommentsRequired
-    ? "Ej: Celebración de aniversario, necesidades especiales, actividades específicas deseadas... Especifica cuántos días parques Disney y cuantos días parques Universal Studios."
-    : "Ej: Celebración de aniversario, necesidades especiales, actividades específicas deseadas..."
+    ? "Ej: Especifica cuántos días parques Disney y cuantos días parques Universal Studios... Celebración de aniversario, necesidades especiales, actividades específicas deseadas."
+    : "Ej: Celebración de aniversario, necesidades especiales, actividades específicas deseadas...";
 
   useEffect(() => {
     if (submitted && successMessageRef.current) {
-      const elementTop = successMessageRef.current.offsetTop
-      const offset = 100 // Espacio desde el top (puedes ajustarlo)
+      const elementTop = successMessageRef.current.offsetTop;
+      const offset = 100;
 
       window.scrollTo({
         top: elementTop - offset,
         behavior: "smooth",
-      })
+      });
     }
   }, [submitted]);
 
@@ -83,49 +85,48 @@ export function QuoteForm() {
     setError(null);
 
     try {
-      const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      
-      if (!siteKey) {
-        console.log("Error al obtener el recaptcha");
-        throw new Error("Configuración de seguridad incompleta")
-      }
+      if (!apiBaseUrl) throw new Error("API no configurada");
 
-      const recaptchaToken = await new Promise<string>((resolve, reject) => {
-        if (typeof window !== "undefined" && window.grecaptcha) {
-          window.grecaptcha.ready(() => {
-            window.grecaptcha.execute(siteKey, { action: "submit_quote" }).then(resolve).catch(reject)
-          })
-        } else {
-          console.log("Sistema de verificación no disponible");
-          reject(new Error("Sistema de verificación no disponible"))
-        }
-      })
-
-      const response = await axios.post(apiBaseUrl + "/api/mail/sendQuotationForm", {
+      const recaptchaToken = await getToken("submit_quote");
+      const response = await axios.post(
+        apiBaseUrl + "/api/mail/sendQuotationForm",
+        {
           ...formData,
           recaptchaToken,
-      })
+        },
+      );
 
       // errors logged in backend side
       if (response.status === 403 || response.status === 500) {
-        setError(response?.data?.message || "Error de servidor al enviar la cotización");
+        setError(
+          response?.data?.message ||
+            "Error de servidor al enviar la cotización",
+        );
       }
 
       setSubmitted(true);
     } catch (err) {
-      console.error("Error al enviar cotización:", err)
+      console.error("Error al enviar cotización:", err);
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Error al enviar la cotización");
+        setError(
+          err.response?.data?.message || "Error al enviar la cotización",
+        );
       } else {
-        setError(err instanceof Error ? err.message : "Error al enviar la cotización");
+        setError(
+          err instanceof Error ? err.message : "Error al enviar la cotización",
+        );
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -136,12 +137,15 @@ export function QuoteForm() {
     setFormData({
       ...formData,
       phone: value || "",
-    })
-  }
+    });
+  };
 
   if (submitted) {
     return (
-      <Card ref={successMessageRef} className="mx-auto max-w-2xl border-primary/20 bg-primary/5">
+      <Card
+        ref={successMessageRef}
+        className="mx-auto max-w-2xl border-primary/20 bg-primary/5"
+      >
         <CardContent className="pt-12 pb-12 text-center">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-6" />
           <h3 className="font-serif text-2xl font-bold text-primary mb-4">
@@ -177,7 +181,7 @@ export function QuoteForm() {
                 tripType: "",
                 tripTheme: "",
                 comments: "",
-                recaptchaToken: ""
+                recaptchaToken: "",
               });
             }}
             className="bg-primary hover:bg-primary/90"
@@ -224,6 +228,7 @@ export function QuoteForm() {
                 onChange={handleChange}
                 required
                 placeholder="ejemplo@correo.com"
+                autoComplete="email"
               />
             </div>
           </div>
@@ -231,6 +236,8 @@ export function QuoteForm() {
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono *</Label>
               <PhoneInput
+                id="phone"
+                name="phone"
                 international
                 defaultCountry="MX"
                 value={formData.phone}
@@ -313,32 +320,34 @@ export function QuoteForm() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="have">Cuentan con Visa Vigente</Label>
+              <Label htmlFor="haveVisa">Cuentan con Visa Vigente</Label>
               <select
-              id="haveVisa"
-              name="haveVisa"
-              value={formData.haveVisa}
-              onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="">Seleccionar...</option>
-              <option value="false">No</option>
-              <option value="true">Sí</option>
-            </select>
+                id="haveVisa"
+                name="haveVisa"
+                value={formData.haveVisa}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="havePassport">Cuentan con Pasaporte Vigente</Label>
+              <Label htmlFor="havePassport">
+                Cuentan con Pasaporte Vigente
+              </Label>
               <select
-              id="havePassport"
-              name="havePassport"
-              value={formData.havePassport}
-              onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option selected value="">Seleccionar...</option>
-              <option value="false">No</option>
-              <option value="true">Sí</option>
-            </select>
+                id="havePassport"
+                name="havePassport"
+                value={formData.havePassport}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
             </div>
           </div>
         </CardContent>
@@ -532,7 +541,9 @@ export function QuoteForm() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="comments">Especificaciones especiales {isCommentsRequired && "*"}</Label>
+            <Label htmlFor="comments">
+              Especificaciones especiales {isCommentsRequired && "*"}
+            </Label>
             <Textarea
               id="comments"
               name="comments"
@@ -552,9 +563,17 @@ export function QuoteForm() {
         <Button
           type="submit"
           size="lg"
-          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-12 py-6 h-auto"
+          disabled={isLoading}
+          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-12 py-6 h-auto disabled:opacity-70"
         >
-          Solicitar Cotización
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Enviando...
+            </span>
+          ) : (
+            "Solicitar Cotización"
+          )}
         </Button>
       </div>
     </form>
