@@ -1,7 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // <CHANGE> Using Inter for body and Poppins for headings
@@ -57,7 +56,6 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
       </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>
         {children}
-        <Analytics />
       </body>
     </html>
   );
