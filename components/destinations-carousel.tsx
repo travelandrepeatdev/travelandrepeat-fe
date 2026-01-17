@@ -60,9 +60,6 @@ export function DestinationsCarousel() {
           <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl mb-4">
             Destinos y paquetes populares
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Descubre nuestras ofertas más solicitadas con precios especiales
-          </p>
         </div>
 
         <div className="relative">
