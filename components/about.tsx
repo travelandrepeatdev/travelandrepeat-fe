@@ -76,37 +76,37 @@ export function About() {
             {/* Grid de certificaciones */}
             <div className="grid grid-cols-2 gap-4">
               <img
-                src="/travel-certification-badge-1.png"
+                src="/travel-certification-badge-1.webp"
                 alt="Certificación 1"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
 
               <img
-                src="/travel-certification-badge-2.png"
+                src="/travel-certification-badge-2.webp"
                 alt="Certificación 2"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
 
               <img
-                src="/travel-certification-badge-3.png"
+                src="/travel-certification-badge-3.webp"
                 alt="Certificación 3"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
 
               <img
-                src="/travel-certification-badge-4.png"
+                src="/travel-certification-badge-4.webp"
                 alt="Certificación 4"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
 
               <img
-                src="/travel-certification-badge-5.png"
+                src="/travel-certification-badge-5.webp"
                 alt="Certificación 5"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
 
               <img
-                src="/travel-certification-badge-6.png"
+                src="/travel-certification-badge-6.webp"
                 alt="Certificación 6"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
