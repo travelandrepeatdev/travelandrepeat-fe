@@ -12,7 +12,10 @@ export function CurrencyIndicator() {
 
   const isBusinessHour = () => {
     const hour = new Date().getHours();
-    return hour >= 9 && hour < 18;
+    const day = new Date().getDay();
+    const sundayDay = 0;
+    
+    return hour >= 9 && hour < 18 && day != sundayDay;
   };
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export function CurrencyIndicator() {
   }, []);
 
   if (isLoading || !usdToMxn) {
-    return <div className="text-xs text-muted-foreground">USD/MXN: --.--</div>;
+    return <div className="text-xs text-muted-foreground" style={{ animation: `fadeInUp 0.5s ease-out ${3*0.1}s forwards`}} >USD/MXN: $ --.--</div>;
   }
 
   return (

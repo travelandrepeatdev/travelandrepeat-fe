@@ -7,10 +7,10 @@ export function About() {
       <div className="container px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           <div className="relative">
-            <div className="relative z-10">
-              <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl mb-6">
+            <div className="relative z-10 text-justify">
+              <h3 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-4xl mb-6">
                 Tu experto en viajes
-              </h2>
+              </h3>
               <p className="text-lg leading-relaxed mb-6">
                 <span className="font-semibold text-foreground">
                 Hola! 👋 soy Eva Elizabeth! 💁🏻‍♀️
@@ -19,7 +19,7 @@ export function About() {
               <p className="text-lg leading-relaxed mb-6">
                 🎢 Agente de viajes con experiencia real, certificada por{" "}
                 <span className="font-semibold text-foreground">
-                  Disney y Universal
+                  Disney y Universal Studios
                 </span>
                 , me especializo en crear experiencias únicas para familias y viajeros que buscan explorar el mundo.
               </p>
@@ -27,7 +27,10 @@ export function About() {
                 He ayudado a personas con planeación clara y acompañamiento de principio a fin.
               </p>
               <p className="text-lg leading-relaxed mb-6">
-                💜 Viaja con confianza, tranquilidad y la seguridad de estar en manos de alguien que conoce y ama viajar.
+                <span className="font-semibold text-foreground">
+                  💜 Viaja y Repite! {" "}
+                </span>
+                Confianza, tranquilidad y la seguridad de estar en manos de alguien que conoce y ama viajar.
               </p>
 
               <div className="space-y-3">

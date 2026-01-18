@@ -14,7 +14,7 @@ export function Footer() {
                 Travel & Repeat
               </span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed text-justify">
               Tu agente de viajes independiente especializado en crear
               experiencias inolvidables en Disney, Universal Studios y destinos
               alrededor del mundo.
