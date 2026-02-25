@@ -17,10 +17,7 @@ jobs:
       - name: Generate version tags
         id: vars
         run: |
-          DATE_TAG=$(date +'%Y.%m.%d')
-          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
-          echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       # Login to GHCR Github Container Registry
       - name: Login to GHCR
@@ -45,27 +42,28 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
-            ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
-            ${{ github.repository_owner }}/travelandrepeatdev:latest
-            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.DATE_TAG }}
-            ${{ github.repository_owner }}/travelandrepeatdev:${{ env.SHORT_SHA }}
+            ghcr.io/${{ github.repository_owner }}/travelandrepeat-fe:latest
+            ghcr.io/${{ github.repository_owner }}/travelandrepeat-fe:${{ env.SHORT_SHA }}
+            ${{ github.repository_owner }}/travelandrepeat-fe:latest
 
       # Deploy to VPS
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }} # user app-github in vps
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           # Always pulled image from GHCR to keep it private
           script: |
+            set -e
+
+            IMAGE=ghcr.io/${{ github.repository_owner }}/travelandrepeat-fe:${{ env.SHORT_SHA }}
+
             echo "== Logging into GHCR =="
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             echo "== Pulling latest image =="
-            docker pull ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
+            docker pull $IMAGE
 
             echo "== Stopping old container =="
             docker stop tyr-fe || true
@@ -73,10 +71,15 @@ jobs:
             echo "== Removing old container =="
             docker rm tyr-fe || true
 
+            echo "== Hard reset container =="
+            docker image prune -af
+
             echo "== Starting new container =="
             docker run -d \
               --name tyr-fe \
+              --restart unless-stopped \
               -p 3000:3000 \
-              ghcr.io/${{ github.repository_owner }}/travelandrepeatdev:latest
+              -e NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }} \
+              $IMAGE
 
             echo "== Deployment completed successfully =="

@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://travelandrepeat.com.mx
+
+# Sitemaps
+Sitemap: https://travelandrepeat.com.mx/sitemap.xml

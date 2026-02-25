@@ -1,8 +1,7 @@
 import { QuoteHeader } from "@/components/quote-header"
 import { QuoteForm } from "@/components/quote-form"
-import { QuoteBenefits } from "@/components/quote-benefits"
 import { Footer } from "@/components/footer"
-import { Benefits } from "@/components/benefits"
+import RecaptchaRouterProvider from "@/components/recaptcha/RecaptchaRouterProvider"
 
 export const metadata = {
   title: "Solicitar Cotización - Travel & Repeat",
@@ -20,15 +19,12 @@ export default function QuotePage() {
               Solicita tu cotización personalizada
             </h1>
             <p className="text-lg text-muted-foreground text-pretty">
-              Completa el formulario y uno de nuestros agentes especializados te contactará con la mejor propuesta para
-              tu viaje soñado
+              Completa el formulario y en un momento te contactaré con la mejor propuesta para tu viaje
             </p>
           </div>
-
-          <QuoteForm />
-
-          <QuoteBenefits />
-          <Benefits />
+          <RecaptchaRouterProvider>
+            <QuoteForm />
+          </RecaptchaRouterProvider>
         </div>
       </main>
       <Footer />

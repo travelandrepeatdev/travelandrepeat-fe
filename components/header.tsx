@@ -24,8 +24,7 @@ export function Header() {
             <span className="font-serif text-xl font-bold text-primary">Travel & Repeat</span>
           </a>
 
-          <Button 
-            //className="bg-primary hover:login-foreground text-primary-foreground hover:scale-105 hover:shadow-lg py-0 px-3"
+          <Button
             className="opacity-50 cursor-not-allowed py-0 px-3"
             style={{ margin: `20px`,}}
             >
@@ -53,15 +52,8 @@ export function Header() {
             </a>
           ))}
 
-          <Button size="sm" 
-            //className="bg-accent hover:bg-accent/90" 
-            asChild
-            className="opacity-50 cursor-not-allowed bg-accent hover:bg-accent/70 py-0 px-3"
-            >
-            <Link 
-              onClick={ (event) => event.preventDefault() }
-              href="/cotizacion">Formulario de cotización
-            </Link>
+          <Button size="sm" className="bg-accent hover:bg-accent/90" asChild>
+            <Link href="/cotizacion">Formulario de cotización</Link>
           </Button>
           <CurrencyIndicator />
         </nav>
@@ -100,16 +92,9 @@ export function Header() {
               </a>
             ))}
             
-            <Button size="sm" 
-              //className="bg-accent hover:bg-accent/90 w-full"
-              className="opacity-50 cursor-not-allowed bg-accent hover:bg-accent/70 w-full"
-            >
-              <Link 
-                onClick={ (event) => event.preventDefault() }
-                href="/cotizacion">Formulario de cotización
-              </Link>
-            </Button>
-
+            <Link href="/cotizacion">
+            <Button size="sm" className="bg-accent hover:bg-accent/90 w-full">Formulario de cotización</Button>
+            </Link>
             <CurrencyIndicator />
 
           </nav>

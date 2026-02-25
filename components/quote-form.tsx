@@ -1,126 +1,188 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2 } from "lucide-react"
-import { set } from "date-fns"
+import type React from "react";
+import { useEffect, useRef } from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CheckCircle2 } from "lucide-react";
+import axios from "axios";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { useRecaptcha } from "@/components/recaptcha/useRecaptcha";
+import { Loader2 } from "lucide-react";
 
 export function QuoteForm() {
-  const [submitted, setSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { getToken } = useRecaptcha();
+
+  const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const successMessageRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     // Información del Cliente
-    nombreCompleto: "",
+    completeName: "",
     email: "",
-    telefono: "",
-    paisCiudad: "",
+    phone: "",
+    countryCity: "",
     // Información del Viaje
-    destino: "",
-    fechaSalida: "",
-    fechaRegreso: "",
-    fechasFlexibles: "no",
+    destiny: "",
+    outDate: "",
+    returnDate: "",
+    areDatesFlexible: "false",
+    haveVisa: "",
+    havePassport: "",
     // Presupuesto & Prioridades
-    presupuesto: "",
-    nivelAlojamiento: "estandar",
-    prioridad: "comodidad",
+    budget: "",
+    levelType: "estandar",
+    priority: "comodidad",
     // Viajeros
-    numeroViajeros: "",
-    numeroAdultos: "",
-    numeroMenores: "",
-    edadesMenores: "",
-    viajanBebes: "no",
+    totalTravelers: "",
+    totalAdults: "",
+    totalMinors: "",
+    minorsAges: "",
+    areBabiesTraveling: "false",
     // Preferencias de Viaje
-    tipoViaje: "",
-    tematica: "",
-    aerolinea: "",
-    traslados: "no",
-    seguros: "no",
+    tripType: "",
+    tripTheme: "",
     // Comentarios
-    comentarios: "",
-  })
+    comments: "",
+    recaptchaToken: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+  const isCommentsRequired =
+    formData.tripType === "paquete-completo" ||
+    formData.tripType === "solo-tickets";
+
+  const commentsPlaceholder = isCommentsRequired
+    ? "Ej: Especifica cuántos días parques Disney y cuantos días parques Universal Studios... Celebración de aniversario, necesidades especiales, actividades específicas deseadas."
+    : "Ej: Celebración de aniversario, necesidades especiales, actividades específicas deseadas...";
+
+  useEffect(() => {
+    if (submitted && successMessageRef.current) {
+      const elementTop = successMessageRef.current.offsetTop;
+      const offset = 100;
+
+      window.scrollTo({
+        top: elementTop - offset,
+        behavior: "smooth",
+      });
+    }
+  }, [submitted]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
     try {
-      //const response = await fetch("/api/cotizacion", {
-      const response = fetch("/api/cotizacion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!apiBaseUrl) throw new Error("API no configurada");
+
+      const recaptchaToken = await getToken("submit_quote");
+      const response = await axios.post(
+        apiBaseUrl + "/api/mail/sendQuotationForm",
+        {
+          ...formData,
+          recaptchaToken,
         },
-        body: JSON.stringify(formData),
-      })
+      );
 
-      //const data = await response.json()
-      const data = response.then(res => res.json())
-
-      if (!response) {
-        throw new Error("Error al enviar la cotización")
+      // errors logged in backend side
+      if (response.status === 403 || response.status === 500) {
+        setError(
+          response?.data?.message ||
+            "Error de servidor al enviar la cotización",
+        );
       }
 
-      console.log("Cotización enviada exitosamente:", data)
-      setSubmitted(true)
+      setSubmitted(true);
     } catch (err) {
-      console.error("Error:", err)
-      setError(err instanceof Error ? err.message : "Error al enviar la cotización")
+      console.error("Error al enviar cotización:", err);
+      if (axios.isAxiosError(err)) {
+        setError(
+          err.response?.data?.message || "Error al enviar la cotización",
+        );
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Error al enviar la cotización",
+        );
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    })
-  }
+    });
+  };
+
+  const handlePhoneChange = (value: string | undefined) => {
+    setFormData({
+      ...formData,
+      phone: value || "",
+    });
+  };
 
   if (submitted) {
     return (
-      <Card className="mx-auto max-w-2xl border-primary/20 bg-primary/5">
+      <Card
+        ref={successMessageRef}
+        className="mx-auto max-w-2xl border-primary/20 bg-primary/5"
+      >
         <CardContent className="pt-12 pb-12 text-center">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-6" />
-          <h3 className="font-serif text-2xl font-bold text-primary mb-4">¡Cotización enviada exitosamente!</h3>
+          <h3 className="font-serif text-2xl font-bold text-primary mb-4">
+            ¡Cotización enviada exitosamente!
+          </h3>
           <p className="text-muted-foreground mb-6 text-pretty">
-            Gracias por confiar en nosotros. Uno de nuestros agentes especializados revisará tu solicitud y te
-            contactará en las próximas 24 horas con una propuesta personalizada.
+            Gracias por confiar en nosotros. Uno de nuestros agentes
+            especializados revisará tu solicitud y te contactará en las próximas
+            24 horas con una propuesta personalizada.
           </p>
           <Button
             onClick={() => {
-              setSubmitted(false)
+              setSubmitted(false);
               setFormData({
-                nombreCompleto: "",
+                completeName: "",
                 email: "",
-                telefono: "",
-                paisCiudad: "",
-                destino: "",
-                fechaSalida: "",
-                fechaRegreso: "",
-                fechasFlexibles: "no",
-                presupuesto: "",
-                nivelAlojamiento: "estandar",
-                prioridad: "comodidad",
-                numeroViajeros: "",
-                numeroAdultos: "",
-                numeroMenores: "",
-                edadesMenores: "",
-                viajanBebes: "no",
-                tipoViaje: "",
-                tematica: "",
-                aerolinea: "",
-                traslados: "no",
-                seguros: "no",
-                comentarios: "",
-              })
+                phone: "",
+                countryCity: "",
+                destiny: "",
+                outDate: "",
+                returnDate: "",
+                areDatesFlexible: "false",
+                haveVisa: "",
+                havePassport: "",
+                budget: "",
+                levelType: "estandar",
+                priority: "comodidad",
+                totalTravelers: "",
+                totalAdults: "",
+                totalMinors: "",
+                minorsAges: "",
+                areBabiesTraveling: "false",
+                tripType: "",
+                tripTheme: "",
+                comments: "",
+                recaptchaToken: "",
+              });
             }}
             className="bg-primary hover:bg-primary/90"
           >
@@ -128,7 +190,7 @@ export function QuoteForm() {
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -136,17 +198,21 @@ export function QuoteForm() {
       {/* Información del Cliente */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">1. Información del Cliente</CardTitle>
-          <CardDescription>Datos de contacto para comunicarnos contigo</CardDescription>
+          <CardTitle className="font-serif text-2xl text-primary">
+            1. Información del Cliente
+          </CardTitle>
+          <CardDescription>
+            Datos de contacto para comunicarnos contigo
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="nombreCompleto">Nombre completo *</Label>
+              <Label htmlFor="completeName">Nombre completo *</Label>
               <Input
-                id="nombreCompleto"
-                name="nombreCompleto"
-                value={formData.nombreCompleto}
+                id="completeName"
+                name="completeName"
+                value={formData.completeName}
                 onChange={handleChange}
                 required
                 placeholder="Ej: María González"
@@ -162,28 +228,31 @@ export function QuoteForm() {
                 onChange={handleChange}
                 required
                 placeholder="ejemplo@correo.com"
+                autoComplete="email"
               />
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="telefono">Teléfono *</Label>
-              <Input
-                id="telefono"
-                name="telefono"
-                type="tel"
-                value={formData.telefono}
-                onChange={handleChange}
+              <Label htmlFor="phone">Teléfono *</Label>
+              <PhoneInput
+                id="phone"
+                name="phone"
+                international
+                defaultCountry="MX"
+                value={formData.phone}
+                onChange={handlePhoneChange}
                 required
-                placeholder="+52 123 456 7890"
+                placeholder="Ingresa número de teléfono"
+                className="phone-input-custom"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="paisCiudad">País / Ciudad de residencia</Label>
+              <Label htmlFor="countryCity">País / Ciudad de residencia</Label>
               <Input
-                id="paisCiudad"
-                name="paisCiudad"
-                value={formData.paisCiudad}
+                id="countryCity"
+                name="countryCity"
+                value={formData.countryCity}
                 onChange={handleChange}
                 placeholder="Ej: México, Ciudad de México"
               />
@@ -195,16 +264,18 @@ export function QuoteForm() {
       {/* Información del Viaje */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">2. Información del Viaje</CardTitle>
-          <CardDescription>Detalles de tu viaje soñado</CardDescription>
+          <CardTitle className="font-serif text-2xl text-primary">
+            2. Información del Viaje
+          </CardTitle>
+          <CardDescription>Detalles de tu viaje</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="destino">Destino o destinos deseados *</Label>
+            <Label htmlFor="destiny">Destino o destinos deseados *</Label>
             <Input
-              id="destino"
-              name="destino"
-              value={formData.destino}
+              id="destiny"
+              name="destiny"
+              value={formData.destiny}
               onChange={handleChange}
               required
               placeholder="Ej: Orlando, Disney World"
@@ -212,40 +283,72 @@ export function QuoteForm() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fechaSalida">Fecha de salida *</Label>
+              <Label htmlFor="outDate">Fecha de salida *</Label>
               <Input
-                id="fechaSalida"
-                name="fechaSalida"
+                id="outDate"
+                name="outDate"
                 type="date"
-                value={formData.fechaSalida}
+                value={formData.outDate}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fechaRegreso">Fecha de regreso *</Label>
+              <Label htmlFor="returnDate">Fecha de regreso *</Label>
               <Input
-                id="fechaRegreso"
-                name="fechaRegreso"
+                id="returnDate"
+                name="returnDate"
                 type="date"
-                value={formData.fechaRegreso}
+                value={formData.returnDate}
                 onChange={handleChange}
                 required
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fechasFlexibles">¿Fechas flexibles?</Label>
+            <Label htmlFor="areDatesFlexible">¿Fechas flexibles?</Label>
             <select
-              id="fechasFlexibles"
-              name="fechasFlexibles"
-              value={formData.fechasFlexibles}
+              id="areDatesFlexible"
+              name="areDatesFlexible"
+              value={formData.areDatesFlexible}
               onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="no">No</option>
-              <option value="si">Sí</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
             </select>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="haveVisa">Cuentan con Visa Vigente</Label>
+              <select
+                id="haveVisa"
+                name="haveVisa"
+                value={formData.haveVisa}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="havePassport">
+                Cuentan con Pasaporte Vigente
+              </Label>
+              <select
+                id="havePassport"
+                name="havePassport"
+                value={formData.havePassport}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -253,26 +356,30 @@ export function QuoteForm() {
       {/* Presupuesto & Prioridades */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">3. Presupuesto y Prioridades</CardTitle>
-          <CardDescription>Ayúdanos a personalizar tu experiencia</CardDescription>
+          <CardTitle className="font-serif text-2xl text-primary">
+            3. Presupuesto y Prioridades
+          </CardTitle>
+          <CardDescription>
+            Ayúdanos a personalizar tu experiencia
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="presupuesto">Presupuesto total aproximado</Label>
+            <Label htmlFor="budget">Presupuesto total aproximado</Label>
             <Input
-              id="presupuesto"
-              name="presupuesto"
-              value={formData.presupuesto}
+              id="budget"
+              name="budget"
+              value={formData.budget}
               onChange={handleChange}
               placeholder="Ej: $50,000 - $80,000 MXN"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="nivelAlojamiento">Nivel de alojamiento</Label>
+            <Label htmlFor="levelType">Nivel de alojamiento</Label>
             <select
-              id="nivelAlojamiento"
-              name="nivelAlojamiento"
-              value={formData.nivelAlojamiento}
+              id="levelType"
+              name="levelType"
+              value={formData.levelType}
               onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -282,11 +389,11 @@ export function QuoteForm() {
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="prioridad">Prioridad del viaje</Label>
+            <Label htmlFor="priority">Prioridad del viaje</Label>
             <select
-              id="prioridad"
-              name="prioridad"
-              value={formData.prioridad}
+              id="priority"
+              name="priority"
+              value={formData.priority}
               onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -302,32 +409,34 @@ export function QuoteForm() {
       {/* Viajeros */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">4. Información de Viajeros</CardTitle>
+          <CardTitle className="font-serif text-2xl text-primary">
+            4. Información de Viajeros
+          </CardTitle>
           <CardDescription>¿Quiénes viajarán?</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="numeroViajeros">Número total de viajeros *</Label>
+              <Label htmlFor="totalTravelers">Número total de viajeros *</Label>
               <Input
-                id="numeroViajeros"
-                name="numeroViajeros"
+                id="totalTravelers"
+                name="totalTravelers"
                 type="number"
                 min="1"
-                value={formData.numeroViajeros}
+                value={formData.totalTravelers}
                 onChange={handleChange}
                 required
                 placeholder="Ej: 4"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="numeroAdultos">Número de adultos *</Label>
+              <Label htmlFor="totalAdults">Número de adultos *</Label>
               <Input
-                id="numeroAdultos"
-                name="numeroAdultos"
+                id="totalAdults"
+                name="totalAdults"
                 type="number"
                 min="0"
-                value={formData.numeroAdultos}
+                value={formData.totalAdults}
                 onChange={handleChange}
                 required
                 placeholder="Ej: 2"
@@ -336,39 +445,39 @@ export function QuoteForm() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="numeroMenores">Número de menores</Label>
+              <Label htmlFor="totalMinors">Número de menores</Label>
               <Input
-                id="numeroMenores"
-                name="numeroMenores"
+                id="totalMinors"
+                name="totalMinors"
                 type="number"
                 min="0"
-                value={formData.numeroMenores}
+                value={formData.totalMinors}
                 onChange={handleChange}
                 placeholder="Ej: 2"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edadesMenores">Edades de los menores</Label>
+              <Label htmlFor="minorsAges">Edades de los menores</Label>
               <Input
-                id="edadesMenores"
-                name="edadesMenores"
-                value={formData.edadesMenores}
+                id="minorsAges"
+                name="minorsAges"
+                value={formData.minorsAges}
                 onChange={handleChange}
                 placeholder="Ej: 8 y 12 años"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="viajanBebes">¿Viajan bebés?</Label>
+            <Label htmlFor="areBabiesTraveling">¿Viajan bebés?</Label>
             <select
-              id="viajanBebes"
-              name="viajanBebes"
-              value={formData.viajanBebes}
+              id="areBabiesTraveling"
+              name="areBabiesTraveling"
+              value={formData.areBabiesTraveling}
               onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="no">No</option>
-              <option value="si">Sí</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
             </select>
           </div>
         </CardContent>
@@ -377,33 +486,36 @@ export function QuoteForm() {
       {/* Preferencias de Viaje */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">5. Preferencias de Viaje</CardTitle>
+          <CardTitle className="font-serif text-2xl text-primary">
+            5. Preferencias de Viaje
+          </CardTitle>
           <CardDescription>Personaliza tu experiencia</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="tipoViaje">Tipo de viaje *</Label>
+            <Label htmlFor="tripType">Tipo de viaje *</Label>
             <select
-              id="tipoViaje"
-              name="tipoViaje"
-              value={formData.tipoViaje}
+              id="tripType"
+              name="tripType"
+              value={formData.tripType}
               onChange={handleChange}
               required
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Seleccionar...</option>
               <option value="paquete-completo">Paquete completo</option>
+              <option value="solo-tickets">Solo tickets</option>
               <option value="solo-hotel">Solo hotel</option>
               <option value="crucero">Crucero</option>
               <option value="tours">Tours</option>
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="tematica">Temática del viaje *</Label>
+            <Label htmlFor="tripTheme">Temática del viaje *</Label>
             <select
-              id="tematica"
-              name="tematica"
-              value={formData.tematica}
+              id="tripTheme"
+              name="tripTheme"
+              value={formData.tripTheme}
               onChange={handleChange}
               required
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -416,25 +528,29 @@ export function QuoteForm() {
               <option value="romantico">Romántico</option>
             </select>
           </div>
-          
         </CardContent>
       </Card>
 
       {/* Comentarios adicionales */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-primary">6. Comentarios Adicionales</CardTitle>
+          <CardTitle className="font-serif text-2xl text-primary">
+            6. Comentarios Adicionales
+          </CardTitle>
           <CardDescription>Cuéntanos más sobre tu viaje ideal</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="comentarios">Especificaciones especiales</Label>
+            <Label htmlFor="comments">
+              Especificaciones especiales {isCommentsRequired && "*"}
+            </Label>
             <Textarea
-              id="comentarios"
-              name="comentarios"
-              value={formData.comentarios}
+              id="comments"
+              name="comments"
+              value={formData.comments}
               onChange={handleChange}
-              placeholder="Ej: Celebración de aniversario, necesidades especiales, actividades específicas deseadas, restricciones alimentarias..."
+              required={isCommentsRequired}
+              placeholder={commentsPlaceholder}
               rows={6}
               className="resize-none"
             />
@@ -447,11 +563,19 @@ export function QuoteForm() {
         <Button
           type="submit"
           size="lg"
-          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-12 py-6 h-auto"
+          disabled={isLoading}
+          className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-12 py-6 h-auto disabled:opacity-70"
         >
-          Solicitar Cotización
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Enviando...
+            </span>
+          ) : (
+            "Solicitar Cotización"
+          )}
         </Button>
       </div>
     </form>
-  )
+  );
 }

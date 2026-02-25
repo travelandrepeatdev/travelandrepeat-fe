@@ -220,3 +220,24 @@
     }
   
 }
+
+/* Custom styles for react-phone-number-input to match design system */
+.phone-input-custom {
+  @apply flex h-10 w-full rounded-md border border-input bg-background text-sm ring-offset-background;
+}
+
+.phone-input-custom .PhoneInputInput {
+  @apply flex-1 bg-transparent px-3 py-2 outline-none placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.phone-input-custom .PhoneInputCountrySelect {
+  @apply h-full border-0 bg-transparent px-2 outline-none focus-visible:outline-none;
+}
+
+.phone-input-custom .PhoneInputCountryIcon {
+  @apply mr-2;
+}
+
+.phone-input-custom:focus-within {
+  @apply ring-2 ring-ring ring-offset-2;
+}

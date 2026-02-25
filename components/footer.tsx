@@ -14,40 +14,12 @@ export function Footer() {
                 Travel & Repeat
               </span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed text-justify">
               Tu agente de viajes independiente especializado en crear
               experiencias inolvidables en Disney, Universal Studios y destinos
               alrededor del mundo.
             </p>
           </div>
-
-          {/* Quick Links 
-          <div>
-            <h3 className="font-serif text-base font-semibold text-foreground mb-4">Enlaces rápidos</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Paquetes Disney
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Universal Studios
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Cruceros
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Tours y eventos
-                </a>
-              </li>
-            </ul>
-          </div>
-          */}
 
           {/* Contact Info */}
           <div>
@@ -115,19 +87,10 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col items-center gap-4 text-sm text-muted-foreground">
           <p>
-            © {new Date().getFullYear()} Travel & Repeat. Todos los derechos
+            © {new Date().getFullYear()} Travel & Repeat. Jalisco, Mexico. Todos los derechos
             reservados.
           </p>
-          {/* 
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-primary transition-colors">
-              Políticas de privacidad
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Términos y condiciones
-            </a>
-          </div> 
-          */}
+          
         </div>
       </div>
     </footer>

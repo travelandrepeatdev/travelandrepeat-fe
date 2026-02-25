@@ -53,8 +53,6 @@ export function Contact() {
             </Button>
             
           </div>
-
-          <p className="text-sm text-muted-foreground">Respuesta garantizada</p>
         </div>
       </div>
     </section>
