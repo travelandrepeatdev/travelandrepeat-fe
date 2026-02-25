@@ -79,7 +79,7 @@ export function Header() {
               <a
                 key={link.name}
                 href={link.href}
-                target={link.target}
+                //target={link.target}
                 className={`text-sm font-medium transition-colors duration-300 ${
                   link.disabled
                     ? "text-foreground/30 cursor-not-allowed pointer-events-none"
