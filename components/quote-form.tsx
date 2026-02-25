@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
 import PhoneInput from "react-phone-number-input";
@@ -85,12 +79,12 @@ export function QuoteForm() {
     setError(null);
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const apiBaseUrl = process.env.API_BASE_URL;
       if (!apiBaseUrl) throw new Error("API no configurada");
 
       const recaptchaToken = await getToken("submit_quote");
       const response = await axios.post(
-        apiBaseUrl + "/api/mail/sendQuotationForm",
+        apiBaseUrl + "/mail/sendQuotationForm",
         {
           ...formData,
           recaptchaToken,

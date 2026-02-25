@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, CastleIcon } from "lucide-react";
-import { CurrencyIndicator } from "@/components/currency-indicator";
+import { CurrencyIndicator } from "./currency-indicator";
 import Link from "next/link"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: "Contacto", href: "#contact" },
-    { name: "Blog", href: "#", target: "_blank", disabled: true },
+    { name: "Contacto", href: "#contact", disabled: false },
+    { name: "Blog", href: "/blogs", target: "/blogs", disabled: false },
   ];
 
   return (
@@ -24,12 +24,11 @@ export function Header() {
             <span className="font-serif text-xl font-bold text-primary">Travel & Repeat</span>
           </a>
 
-          <Button
-            className="opacity-50 cursor-not-allowed py-0 px-3"
-            style={{ margin: `20px`,}}
-            >
-            Login Agente
-          </Button>
+          <Link href="/login">
+            <Button style={{ margin: `20px`,}} >
+              Login Agente
+            </Button>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -55,7 +54,7 @@ export function Header() {
           <Button size="sm" className="bg-accent hover:bg-accent/90" asChild>
             <Link href="/cotizacion">Formulario de cotización</Link>
           </Button>
-          <CurrencyIndicator />
+          <CurrencyIndicator mobileMenuOpen={mobileMenuOpen} />
         </nav>
 
         {/* Mobile Menu Button */}
@@ -95,7 +94,7 @@ export function Header() {
             <Link href="/cotizacion">
             <Button size="sm" className="bg-accent hover:bg-accent/90 w-full">Formulario de cotización</Button>
             </Link>
-            <CurrencyIndicator />
+            <CurrencyIndicator mobileMenuOpen={mobileMenuOpen} />
 
           </nav>
         </div>
