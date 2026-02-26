@@ -79,7 +79,7 @@ export function QuoteForm() {
     setError(null);
 
     try {
-      const apiBaseUrl = process.env.API_BASE_URL;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       if (!apiBaseUrl) throw new Error("API no configurada");
 
       const recaptchaToken = await getToken("submit_quote");

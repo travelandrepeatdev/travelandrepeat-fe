@@ -8,7 +8,7 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    API_BASE_URL: process.env.API_BASE_URL,
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     AWS_BUCKET_ACCESS_KEY_ID: process.env.AWS_BUCKET_ACCESS_KEY_ID,
     AWS_BUCKET_SECRET_ACCESS_KEY: process.env.AWS_BUCKET_SECRET_ACCESS_KEY,
     AWS_BUCKET_ENDPOINT: process.env.AWS_BUCKET_ENDPOINT,

@@ -40,7 +40,7 @@ export function DestinationsCarousel() {
     const fetchPromotions = async () => {
       try {
         console.log("Promotions loaded");
-        const apiBaseUrl = process.env.API_BASE_URL;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const { data } = await axios.get<Promotion[]>(`${apiBaseUrl}/promotions/promotionListActive`);
         
         if (data) {

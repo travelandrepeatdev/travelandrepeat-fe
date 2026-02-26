@@ -1,7 +1,7 @@
 import axios from "axios";
 import { S3Client } from '@aws-sdk/client-s3';
 
-const apiBaseUrl = process.env.API_BASE_URL;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 const accessKeyId = process.env.AWS_BUCKET_ACCESS_KEY_ID || "";
 const secretAccessKey = process.env.AWS_BUCKET_SECRET_ACCESS_KEY || "";
 const region = process.env.AWS_BUCKET_REGION;

@@ -34,7 +34,7 @@ export function CurrencyIndicator( {mobileMenuOpen} : {mobileMenuOpen: boolean} 
       }
 
       try {
-        const apiBaseUrl = process.env.API_BASE_URL;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const { data } = await axios.get(`${apiBaseUrl}/dollar/rate`);
 
         if (data) {
