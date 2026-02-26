@@ -71,9 +71,6 @@ jobs:
             echo "== Removing old container =="
             docker rm tyr-fe || true
 
-            echo "== Hard reset container =="
-            docker image prune -af
-
             echo "== Starting new container =="
             docker run -d \
               --name tyr-fe \
