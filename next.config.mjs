@@ -7,13 +7,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  env: {
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-    AWS_BUCKET_ACCESS_KEY_ID: process.env.AWS_BUCKET_ACCESS_KEY_ID,
-    AWS_BUCKET_SECRET_ACCESS_KEY: process.env.AWS_BUCKET_SECRET_ACCESS_KEY,
-    AWS_BUCKET_ENDPOINT: process.env.AWS_BUCKET_ENDPOINT,
-    AWS_BUCKET_REGION: process.env.AWS_BUCKET_REGION
-  },
 
   async headers() {
     return [
