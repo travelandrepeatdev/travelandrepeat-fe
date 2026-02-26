@@ -78,10 +78,6 @@ jobs:
               -p 3000:3000 \
               -e NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }} \
               -e NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }} \
-              -e AWS_BUCKET_ACCESS_KEY_ID=${{ secrets.AWS_BUCKET_ACCESS_KEY_ID }} \
-              -e AWS_BUCKET_SECRET_ACCESS_KEY=${{ secrets.AWS_BUCKET_SECRET_ACCESS_KEY }} \
-              -e AWS_BUCKET_ENDPOINT=${{ secrets.AWS_BUCKET_ENDPOINT }} \
-              -e AWS_BUCKET_REGION=${{ secrets.AWS_BUCKET_REGION }} \
               $IMAGE
 
             echo "== Deployment completed successfully =="
