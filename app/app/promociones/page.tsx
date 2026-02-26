@@ -15,8 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import type { Promotion, Currency } from "../lib/types"
 import { useAuth } from "../auth/AuthContext"
-import { apiClient, awsClient } from "../api/apiClient"
-import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { apiClient } from "../api/apiClient"
 
 const promotionActionDelete = "PROMOTION_DELETE";
 const promotionActionUpdate = "PROMOTION_UPDATE";
@@ -29,8 +28,6 @@ const formatedDate = (date: string) => {
 }
 
 export default function PromocionesPage() {
-  const [file, setFile] = useState<File>();
-  const [previewUrl, setPreviewUrl] = useState("");
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
@@ -69,12 +66,6 @@ export default function PromocionesPage() {
     setDialogOpen(true)
   }
 
-  // const command = new PutObjectCommand({
-  //   Bucket: "promotions-bucket",
-  //   Key: file?.name,
-  //   Body: file
-  // });
-
   const handleSave = () => {
     if (editingPromo) {
 
@@ -85,9 +76,6 @@ export default function PromocionesPage() {
         if (response.data) {
           console.log("Promotion updated");
           setPromotions((prev) => prev.map((p) => p.id === editingPromo.id ? { ...p, ...formData } : p))   
-          
-          //awsClient.send(command);
-          
         } else {
           console.error("Failed to update promotion");
         }
@@ -147,24 +135,6 @@ export default function PromocionesPage() {
     );
  
   }
-
-  // const handleImgChange = (e: any) => {
-  //   setFormData({ ...formData, image_url: e.target.value });
-  //   const selectedFile = e.target.files[0];
-  //   if (selectedFile) {
-  //     setFile(selectedFile);
-  //     // Create a local URL for the file to preview it
-  //     setPreviewUrl(URL.createObjectURL(selectedFile));
-  //   }
-  // }
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   const discount = (orig: number, promo: number) =>
     orig > 0 ? Math.round(((orig - promo) / orig) * 100) : 0
