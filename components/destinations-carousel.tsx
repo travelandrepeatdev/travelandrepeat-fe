@@ -9,6 +9,8 @@ import Link from "next/link";
 import type { Promotion } from "../app/app/lib/types";
 import axios from "axios";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export function DestinationsCarousel() {
   const [destinations, setDestinations] = useState<(Promotion)[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -44,7 +46,9 @@ export function DestinationsCarousel() {
         const { data } = await axios.get<Promotion[]>(`${apiBaseUrl}/promotions/promotionListActive`);
         
         if (data) {
-          setDestinations(data);
+          setDestinations(data.map((d) => (
+            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url: null}
+          )));
         } else {
           console.error("Failed to get promotions");
         }

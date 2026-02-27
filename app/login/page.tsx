@@ -11,6 +11,7 @@ import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { Footer } from "@/components/footer";
 import { useAuth } from "../app/auth/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +19,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    console.log("User has token, redirecting to the app :)");
+    // Redirigir al dashboard o página principal del agente
+    window.location.href = "/app";
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,9 +79,6 @@ export default function LoginPage() {
           case "ACCOUNT_DISABLED":
             setError("Tu cuenta ha sido deshabilitada. Contacta al administrador.");
             break;
-          // case "TOO_MANY_ATTEMPTS":
-          //   setError("Demasiados intentos fallidos. Intenta más tarde.");
-          //   break;
           default:
             setError(errorMessage);
         }

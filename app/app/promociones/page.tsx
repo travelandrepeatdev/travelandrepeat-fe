@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,10 @@ const formatedDate = (date: string) => {
   return result;
 }
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function PromocionesPage() {
+  const [file, setFile] = useState<File | null>(null)
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
@@ -36,7 +39,8 @@ export default function PromocionesPage() {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "", description: "", destination: "", original_price: 0, promo_price: 0,
-    currency: "USD" as Currency, image_url: "", start_date: "", end_date: "", is_active: true,
+    currency: "USD" as Currency, start_date: "", end_date: "", is_active: true, created_by: "",
+    image_url: ""
   })
 
   const hasPermissionDelete = user?.permissions.includes(promotionActionDelete);
@@ -51,31 +55,49 @@ export default function PromocionesPage() {
 
   const openCreate = () => {
     setEditingPromo(null)
-    setFormData({ title: "", description: "", destination: "", original_price: 0, promo_price: 0, currency: "USD", image_url: "", start_date: "", end_date: "", is_active: true })
+    setFile(null)
+    setFormData({ 
+      title: "", description: "", destination: "", original_price: 0, promo_price: 0, 
+      currency: "USD", start_date: "", end_date: "", is_active: true, created_by: "",
+      image_url: ""
+    })
     setDialogOpen(true)
   }
 
   const openEdit = (promo: Promotion) => {
     setEditingPromo(promo)
+    setFile(null)
     setFormData({
       title: promo.title, description: promo.description, destination: promo.destination,
-      original_price: promo.original_price, promo_price: promo.promo_price, currency: promo.currency,
-      image_url: promo.image_url || "", start_date: formatedDate(promo.start_date), 
-      end_date: formatedDate(promo.end_date), is_active: promo.is_active,
+      original_price: promo.original_price, promo_price: promo.promo_price, currency: promo.currency, 
+      start_date: formatedDate(promo.start_date), end_date: formatedDate(promo.end_date), is_active: promo.is_active,
+      created_by: "", image_url: promo.image_url || ""
     })
     setDialogOpen(true)
   }
 
   const handleSave = () => {
+
+    const form = new FormData()
+    form.append("image", !file ? "" : file)
+
     if (editingPromo) {
 
-      apiClient.put<Promotion>("/promotions/promotion", {
-        ...formData, 
-        id: editingPromo.id,
-      }).then((response) => {
+      const obj = {
+        ...formData,
+        id: editingPromo.id
+      };
+
+      form.append("promotionRequest",
+      new Blob(
+        [JSON.stringify(obj)],
+        { type: "application/json" }
+      ))
+
+      apiClient.put("/promotions/promotion", form).then((response) => {
         if (response.data) {
           console.log("Promotion updated");
-          setPromotions((prev) => prev.map((p) => p.id === editingPromo.id ? { ...p, ...formData } : p))   
+          setPromotions((prev) => prev.map((p) => p.id === editingPromo.id ? { ...p, ...response.data } : p))
         } else {
           console.error("Failed to update promotion");
         }
@@ -85,10 +107,18 @@ export default function PromocionesPage() {
 
     } else {
 
-      apiClient.post<Promotion>("/promotions/promotion", {
+      const obj = {
         ...formData,
         created_by: user?.userId,
-        }).then((response) => {
+      };
+
+      form.append("promotionRequest",
+      new Blob(
+        [JSON.stringify(obj)],
+        { type: "application/json" }
+      ))
+
+      apiClient.post("/promotions/promotion", form).then((response) => {
           if (response.data) {
             console.log("Promotion saved");
             setPromotions((prev) => [...prev, response.data])
@@ -138,6 +168,12 @@ export default function PromocionesPage() {
 
   const discount = (orig: number, promo: number) =>
     orig > 0 ? Math.round(((orig - promo) / orig) * 100) : 0
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setFile(e.target.files[0])
+    }
+  };
 
   useEffect(() => { 
     const fetchPromotions = async () => {
@@ -205,12 +241,14 @@ export default function PromocionesPage() {
       {/* Card View */}
       {viewMode === "cards" ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
           {filtered.map((promo) => (
             <Card key={promo.id} className="overflow-hidden">
+              
               {promo.image_url && (
                 <div className="relative aspect-video w-full overflow-hidden">
                   <Image
-                    src={promo.image_url}
+                    src={apiBaseUrl + promo.image_url}
                     alt={promo.title}
                     fill
                     className="object-cover"
@@ -224,6 +262,7 @@ export default function PromocionesPage() {
                   )}
                 </div>
               )}
+              
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg font-serif">
@@ -531,24 +570,7 @@ export default function PromocionesPage() {
             </div>
             <div className="space-y-2">
               <Label>Subir imagen</Label>
-              <Input value={formData.image_url} onChange={
-                (e) => setFormData({ ...formData, image_url: e.target.value })
-                } placeholder="/imagen.jpg" />
-
-              {/* <Input type="file" onChange={(e) => handleImgChange(e)} accept="image/*" />
-              {previewUrl && (
-                <div>
-                  <h3>Preview:</h3>
-                  <img src={previewUrl} alt="Uploaded preview" style={{ maxWidth: "150px" }}/>
-                  <br />
-                  <Button onClick={() => {
-                      setFile(undefined);
-                      setPreviewUrl("");
-                    }}>
-                    Remove
-                  </Button>
-                </div>
-              )} */}
+              <Input type="file" onChange={handleFileChange} accept="image/*" />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
@@ -557,6 +579,7 @@ export default function PromocionesPage() {
               <Button
                 onClick={handleSave}
                 disabled={
+                  !file ||
                   !formData.title ||
                   !formData.destination ||
                   formData.promo_price <= 0

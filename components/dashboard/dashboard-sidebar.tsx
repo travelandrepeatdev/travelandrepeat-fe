@@ -44,7 +44,7 @@ export function DashboardSidebar() {
   useEffect(() => {
     apiClient.get("/auth/profile").then((response) => {
         if (response.data) {
-          console.log("User profile fetched:", response.data);
+          console.log("User profile fetched:" + response.data.userId + " -> " + response.data.name);
           setProfile(response.data);
           const token = localStorage.getItem("accessToken");
           if (token) {

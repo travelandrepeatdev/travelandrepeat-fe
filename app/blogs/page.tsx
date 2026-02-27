@@ -34,7 +34,8 @@ export default function BlogsPage() {
             </div>
 
             <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
-              "En Construcción..."
+              "Estamos contruyendo los blogs..."
+              <br />
               <br />
               🚧
               <br />
