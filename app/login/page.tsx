@@ -10,8 +10,6 @@ import { CastleIcon, ArrowLeft, Eye, EyeOff, AlertCircle, Loader2 } from "lucide
 import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { Footer } from "@/components/footer";
-import { useAuth } from "../app/auth/AuthContext";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,13 +17,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    console.log("User has token, redirecting to the app :)");
-    // Redirigir al dashboard o página principal del agente
-    window.location.href = "/app";
-  }
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      console.log("User has token, redirecting to the app :)");
+      // Redirigir al dashboard o página principal del agente
+      window.location.href = "/app";
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
