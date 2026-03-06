@@ -54,7 +54,7 @@ export function DestinationsCarousel() {
         }
 
       } catch (err: any) {
-        console.error("Failed to load promotions");
+        console.error("Failed to load promotions on page");
       }
     };
     fetchPromotions();
