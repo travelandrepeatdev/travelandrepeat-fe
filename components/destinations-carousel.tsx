@@ -1,35 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
+import type { Promotion } from "../app/app/lib/types";
+import axios from "axios";
 
-const destinations = [
-  {
-    id: 1,
-    name: "Universal Studios",
-    location: "Orlando, Florida",
-    price: "-,---",
-    image: "/universal-studios-orlando-wizarding-world.jpg",
-    description:
-      "Vive la aventura en Universal Studios y Islands of Adventure. Incluye acceso al mundo mágico de Harry Potter, hotel y boletos...",
-  },
-];
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function DestinationsCarousel() {
+  const [destinations, setDestinations] = useState<(Promotion)[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedDestination, setSelectedDestination] = useState<
-    (typeof destinations)[0] | null
-  >(null);
+  const [selectedDestination, setSelectedDestination] = useState<(Promotion) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const itemsPerPage = 3;
@@ -43,7 +28,7 @@ export function DestinationsCarousel() {
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
   };
 
-  const openDestinationDetails = (destination: (typeof destinations)[0]) => {
+  const openDestinationDetails = (destination: Promotion) => {
     setSelectedDestination(destination);
     setIsDialogOpen(true);
   };
@@ -52,6 +37,28 @@ export function DestinationsCarousel() {
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
+
+  useEffect(() => { 
+    const fetchPromotions = async () => {
+      try {
+        console.log("Promotions loaded");
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const { data } = await axios.get<Promotion[]>(`${apiBaseUrl}/promotions/promotionListActive`);
+        
+        if (data) {
+          setDestinations(data.map((d) => (
+            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url: null}
+          )));
+        } else {
+          console.error("Failed to get promotions");
+        }
+
+      } catch (err: any) {
+        console.error("Failed to load promotions");
+      }
+    };
+    fetchPromotions();
+  }, []);
 
   return (
     <section className="py-16 md:py-10 bg-muted/30">
@@ -72,8 +79,8 @@ export function DestinationsCarousel() {
                 <CardContent className="p-0">
                   <div className="relative overflow-hidden aspect-[4/3]">
                     <img
-                      src={destination.image || "/placeholder.svg"}
-                      alt={destination.name}
+                      src={destination.image_url || "/placeholder.svg"}
+                      alt={destination.title}
                       className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute bottom-4 left-4 pointer-events-none">
@@ -82,16 +89,16 @@ export function DestinationsCarousel() {
                       </span>
                     </div>
                     <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.price}
+                      Desde ${destination.promo_price}
                     </div>
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <MapPin className="h-4 w-4" />
-                      <span>{destination.location}</span>
+                      <span>{destination.destination}</span>
                     </div>
                     <h3 className="font-serif text-xl font-semibold text-foreground mb-4">
-                      {destination.name}
+                      {destination.title}
                     </h3>
                     <Button
                       variant="outline"
@@ -151,20 +158,20 @@ export function DestinationsCarousel() {
               <div className="overflow-y-auto overflow-x-hidden px-6 py-4">
                 <DialogHeader className="space-y-2 mb-4">
                   <DialogTitle className="font-serif text-2xl break-words pr-8">
-                    {selectedDestination.name}
+                    {selectedDestination.title}
                   </DialogTitle>
                   <DialogDescription className="flex items-center gap-2 text-base">
                     <MapPin className="h-4 w-4 flex-shrink-0" />
                     <span className="break-words overflow-wrap-anywhere">
-                      {selectedDestination.location}
+                      {selectedDestination.destination}
                     </span>
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="relative overflow-hidden rounded-lg aspect-video w-full">
                     <img
-                      src={selectedDestination.image || "/placeholder.svg"}
-                      alt={selectedDestination.name}
+                      src={selectedDestination.image_url || "/placeholder.svg"}
+                      alt={selectedDestination.title}
                       className="object-cover w-full h-full"
                     />
                     <div className="absolute bottom-4 left-4 pointer-events-none">
@@ -175,7 +182,7 @@ export function DestinationsCarousel() {
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-lg font-semibold text-purple-700 break-words">
-                      Desde ${selectedDestination.price} USD
+                      Desde ${selectedDestination.promo_price} USD
                     </p>
                   </div>
                   <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs">

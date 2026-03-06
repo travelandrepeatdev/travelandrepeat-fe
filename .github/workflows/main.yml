@@ -71,15 +71,13 @@ jobs:
             echo "== Removing old container =="
             docker rm tyr-fe || true
 
-            echo "== Hard reset container =="
-            docker image prune -af
-
             echo "== Starting new container =="
             docker run -d \
               --name tyr-fe \
               --restart unless-stopped \
               -p 3000:3000 \
               -e NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }} \
+              -e NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }} \
               $IMAGE
 
             echo "== Deployment completed successfully =="

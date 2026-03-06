@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
 import PhoneInput from "react-phone-number-input";
@@ -90,7 +84,7 @@ export function QuoteForm() {
 
       const recaptchaToken = await getToken("submit_quote");
       const response = await axios.post(
-        apiBaseUrl + "/api/mail/sendQuotationForm",
+        apiBaseUrl + "/mail/sendQuotationForm",
         {
           ...formData,
           recaptchaToken,

@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -10,17 +11,13 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store',
-          },
+          { key: "Cache-Control", value: "no-store" },
         ],
       },
-    ]
+    ];
   },
-  
-}
+};
 
-export default nextConfig
+export default nextConfig;

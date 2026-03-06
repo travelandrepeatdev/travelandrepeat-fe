@@ -6,7 +6,7 @@ import axios from "axios";
 
 const STORAGE_KEY = "usd_mxn_rate";
 
-export function CurrencyIndicator() {
+export function CurrencyIndicator( {mobileMenuOpen} : {mobileMenuOpen: boolean} ) {
   const [usdToMxn, setUsdToMxn] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,7 +35,7 @@ export function CurrencyIndicator() {
 
       try {
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const { data } = await axios.get(`${apiBaseUrl}/api/dollar/rate`);
+        const { data } = await axios.get(`${apiBaseUrl}/dollar/rate`);
 
         if (data) {
           sessionStorage.setItem(STORAGE_KEY, data);
@@ -52,7 +52,13 @@ export function CurrencyIndicator() {
   }, []);
 
   if (isLoading || !usdToMxn) {
+    if (mobileMenuOpen) {
+      return <div className="text-xs text-muted-foreground">USD/MXN: $ --.--</div>;
+    }
     return <div className="text-xs text-muted-foreground" style={{ animation: `fadeInUp 0.5s ease-out ${3*0.1}s forwards`}} >USD/MXN: $ --.--</div>;
+  }
+
+  if (mobileMenuOpen) {
   }
 
   return (
