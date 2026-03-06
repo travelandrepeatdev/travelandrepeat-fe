@@ -11,28 +11,28 @@ export interface User {
   last_login: string | null
   display_name: string | null
   avatar_url: string | null
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
+  role: string | null
 }
 
 export interface Role {
   role_id: string
   name: string
   description: string | null
-  created_at: string
 }
 
 export interface Permission {
   permission_id: string
   name: string
   description: string | null
-  created_at: string
+  created_at: string | null
 }
 
 export interface UserRole {
   user_id: string
   role_id: string
-  assigned_at: string
+  assigned_at: string | null
 }
 
 export interface RolePermission {

@@ -35,7 +35,7 @@ export default function App() {
         const response = await apiClient.get<Dashboard0>("/dashboard/stats");
         setDashboard0(response.data);
       } catch (err: any) {
-        console.error("Failed to load promotions");
+        console.error("Failed to load promotions on dashboard");
       }
     };
     fetchDashboard0();

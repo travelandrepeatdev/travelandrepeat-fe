@@ -1,58 +1,13 @@
 import type {
-  User,
-  Role,
   Permission,
-  UserRole,
   RolePermission,
   Client,
   Provider,
   Commission,
   Expense,
   Promotion,
-  Blog,
   AuditLog,
 } from "./types"
-
-// --- Users ---
-export const mockUsers: User[] = [
-  {
-    user_id: "u-001",
-    email: "admin@travelandrepeat.com",
-    is_active: true,
-    last_login: "2026-02-17T08:30:00Z",
-    display_name: "Administrador",
-    avatar_url: null,
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2026-02-17T08:30:00Z",
-  },
-  {
-    user_id: "u-002",
-    email: "agente@travelandrepeat.com",
-    is_active: true,
-    last_login: "2026-02-16T14:00:00Z",
-    display_name: "María García",
-    avatar_url: null,
-    created_at: "2025-03-15T00:00:00Z",
-    updated_at: "2026-02-16T14:00:00Z",
-  },
-  {
-    user_id: "u-003",
-    email: "viewer@travelandrepeat.com",
-    is_active: false,
-    last_login: "2026-01-10T09:00:00Z",
-    display_name: "Carlos López",
-    avatar_url: null,
-    created_at: "2025-06-01T00:00:00Z",
-    updated_at: "2026-01-10T09:00:00Z",
-  },
-]
-
-// --- Roles ---
-export const mockRoles: Role[] = [
-  { role_id: "r-001", name: "admin", description: "Acceso completo al sistema", created_at: "2025-01-01T00:00:00Z" },
-  { role_id: "r-002", name: "agent", description: "Agente de viajes con acceso a módulos operativos", created_at: "2025-01-01T00:00:00Z" },
-  { role_id: "r-003", name: "viewer", description: "Solo lectura de información", created_at: "2025-01-01T00:00:00Z" },
-]
 
 // --- Permissions ---
 export const mockPermissions: Permission[] = [
@@ -78,13 +33,6 @@ export const mockPermissions: Permission[] = [
   { permission_id: "p-020", name: "admin.roles", description: "Gestionar roles", created_at: "2025-01-01T00:00:00Z" },
   { permission_id: "p-021", name: "admin.permissions", description: "Gestionar permisos", created_at: "2025-01-01T00:00:00Z" },
   { permission_id: "p-022", name: "admin.audit", description: "Ver log de auditoría", created_at: "2025-01-01T00:00:00Z" },
-]
-
-// --- User Roles ---
-export const mockUserRoles: UserRole[] = [
-  { user_id: "u-001", role_id: "r-001", assigned_at: "2025-01-01T00:00:00Z" },
-  { user_id: "u-002", role_id: "r-002", assigned_at: "2025-03-15T00:00:00Z" },
-  { user_id: "u-003", role_id: "r-003", assigned_at: "2025-06-01T00:00:00Z" },
 ]
 
 // --- Role Permissions ---
@@ -142,12 +90,10 @@ export const mockExpenses: Expense[] = [
 
 // --- Promotions ---
 export const mockPromotions: Promotion[] = [
-  { id: "pr-001", title: "Disney World Primavera 2026", description: "Paquete 5 días / 4 noches con hotel y tickets a los 4 parques de Disney World. Incluye transportación aeropuerto-hotel.", destination: "Orlando, FL", original_price: 1800, promo_price: 1499, currency: "USD", image_url: "/universal-studios-orlando-wizarding-world.jpg", start_date: "2026-03-01", end_date: "2026-05-31", is_active: true, created_by: "u-002", created_at: "2026-02-01T00:00:00Z", updated_at: "2026-02-01T00:00:00Z" },
-  { id: "pr-002", title: "Crucero Caribe Royal Caribbean", description: "Crucero 7 noches por el Caribe occidental. Salida desde Galveston, TX. Incluye bebidas ilimitadas.", destination: "Caribe", original_price: 2200, promo_price: 1850, currency: "USD", image_url: "/universal-studios-orlando-wizarding-world.jpg", start_date: "2026-04-01", end_date: "2026-06-30", is_active: true, created_by: "u-002", created_at: "2026-02-05T00:00:00Z", updated_at: "2026-02-05T00:00:00Z" },
+  { id: "pr-001", title: "Disney World Primavera 2026", description: "Paquete 5 días / 4 noches con hotel y tickets a los 4 parques de Disney World. Incluye transportación aeropuerto-hotel.", destination: "Orlando, FL", original_price: 1800, promo_price: 1499, currency: "USD", image_url: "/disney-world-castle-magic-kingdom-sunset.jpg", start_date: "2026-03-01", end_date: "2026-05-31", is_active: true, created_by: "u-002", created_at: "2026-02-01T00:00:00Z", updated_at: "2026-02-01T00:00:00Z" },
+  { id: "pr-002", title: "Crucero Caribe Royal Caribbean", description: "Crucero 7 noches por el Caribe occidental. Salida desde Galveston, TX. Incluye bebidas ilimitadas.", destination: "Caribe", original_price: 2200, promo_price: 1850, currency: "USD", image_url: "/luxury-cruise-ship-caribbean-sea-sunset.jpg", start_date: "2026-04-01", end_date: "2026-06-30", is_active: true, created_by: "u-002", created_at: "2026-02-05T00:00:00Z", updated_at: "2026-02-05T00:00:00Z" },
   { id: "pr-003", title: "Universal Studios Verano", description: "Paquete 4 días / 3 noches con tickets a Universal Studios y Islands of Adventure. Hotel en zona CityWalk.", destination: "Orlando, FL", original_price: 1400, promo_price: 1199, currency: "USD", image_url: "/universal-studios-orlando-wizarding-world.jpg", start_date: "2026-06-01", end_date: "2026-08-31", is_active: false, created_by: "u-002", created_at: "2026-02-10T00:00:00Z", updated_at: "2026-02-10T00:00:00Z" },
 ]
-
-// --- Blogs ---
 
 // --- Audit Log ---
 export const mockAuditLogs: AuditLog[] = [

@@ -44,7 +44,7 @@ export function DashboardSidebar() {
   useEffect(() => {
     apiClient.get("/auth/profile").then((response) => {
         if (response.data) {
-          console.log("User profile fetched:" + response.data.userId + " -> " + response.data.name);
+          console.log("User profile fetched: " + response.data.userId + " -> " + response.data.name);
           setProfile(response.data);
           const token = localStorage.getItem("accessToken");
           if (token) {
@@ -66,6 +66,7 @@ export function DashboardSidebar() {
 
   const agentMenuItemsFiltered = agentMenuItems.filter(item => profile?.permissions.includes(item.permission));
   const adminMenuItemsFiltered = adminMenuItems.filter(item => profile?.permissions.includes(item.permission));
+  const adminMenu = profile?.permissions.includes("ADMIN") || profile?.permissions.includes("AUDIT");
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -78,8 +79,12 @@ export function DashboardSidebar() {
                   <CastleIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-serif font-semibold">Travel & Repeat</span>
-                  <span className="truncate text-xs text-muted-foreground">Panel de Control</span>
+                  <span className="truncate font-serif font-semibold">
+                    Travel & Repeat
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Panel de Control
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -118,38 +123,40 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarSeparator />
-
         {/* Admin Modules */}
-        <Collapsible defaultOpen className="group/collapsible">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger className="flex w-full items-center">
-                Administración
-                <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {adminMenuItemsFiltered.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith(item.href)}
-                        tooltip={item.title}
-                      >
-                        <Link href={item.href}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
+
+        {adminMenu && (
+          <Collapsible defaultOpen className="group/collapsible">
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center">
+                  Administración
+                  <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {adminMenuItemsFiltered.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={pathname.startsWith(item.href)}
+                          tooltip={item.title}
+                        >
+                          <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -165,5 +172,5 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
