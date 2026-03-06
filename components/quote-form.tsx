@@ -147,8 +147,8 @@ export function QuoteForm() {
           </h3>
           <p className="text-muted-foreground mb-6 text-pretty">
             Gracias por confiar en nosotros. Uno de nuestros agentes
-            especializados revisará tu solicitud y te contactará en las próximas
-            24 horas con una propuesta personalizada.
+            especializados revisará tu solicitud y te contactará 
+            con una propuesta personalizada.
           </p>
           <Button
             onClick={() => {
@@ -180,7 +180,7 @@ export function QuoteForm() {
             }}
             className="bg-primary hover:bg-primary/90"
           >
-            Enviar otra cotización
+            Solicitar otra cotización
           </Button>
         </CardContent>
       </Card>
