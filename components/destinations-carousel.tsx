@@ -47,7 +47,7 @@ export function DestinationsCarousel() {
         
         if (data) {
           setDestinations(data.map((d) => (
-            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url: null}
+            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url : null}
           )));
         } else {
           console.error("Failed to get promotions");
@@ -89,7 +89,7 @@ export function DestinationsCarousel() {
                       </span>
                     </div>
                     <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.promo_price}
+                      Desde ${destination.promo_price} {destination.currency}
                     </div>
                   </div>
                   <div className="p-6">

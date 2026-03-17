@@ -122,7 +122,7 @@ export function Footer() {
               </p>
               <div className="mt-4 justify-center text-xs text-muted-foreground hover:text-primary transition-colors">
                 <a
-                  href="https://www.paypal.com/donate/?hosted_button_id=7TC9EF76XYGHS"
+                  href="https://www.paypal.com/donate/?hosted_button_id=HPQZBKVU7XLRE"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
