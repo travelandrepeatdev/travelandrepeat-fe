@@ -89,7 +89,7 @@ export function DestinationsCarousel() {
                       </span>
                     </div>
                     <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.promo_price} {destination.currency}
+                      Desde ${destination.promo_price.toLocaleString()} {destination.currency}
                     </div>
                   </div>
                   <div className="p-6">
