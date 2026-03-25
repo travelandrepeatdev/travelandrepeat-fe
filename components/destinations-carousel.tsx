@@ -89,7 +89,7 @@ export function DestinationsCarousel() {
                       </span>
                     </div>
                     <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.promo_price.toLocaleString()} {destination.currency}
+                      Desde ${destination.promo_price.toLocaleString(destination.currency == "USD" ? "en-US" : "es-MX")} {destination.currency}
                     </div>
                   </div>
                   <div className="p-6">
@@ -183,7 +183,7 @@ export function DestinationsCarousel() {
                     </div>
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-semibold text-purple-700 break-words">
-                        Desde ${selectedDestination.promo_price.toLocaleString()} {selectedDestination.currency}
+                        Desde ${selectedDestination.promo_price.toLocaleString(selectedDestination.currency == "USD" ? "en-US" : "es-MX")} {selectedDestination.currency}
                       </p>
                     </div>
                     <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: "pre-line" }}>
