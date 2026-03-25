@@ -153,9 +153,9 @@ export function DestinationsCarousel() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] flex flex-col">
             {selectedDestination && (
-              <div className="overflow-y-auto overflow-x-hidden px-6 py-4">
+              <div className="overflow-y-auto overflow-x-hidden py-4">
                 <DialogHeader className="space-y-2 mb-4">
                   <DialogTitle className="font-serif text-2xl break-words pr-8">
                     {selectedDestination.title}
@@ -167,35 +167,37 @@ export function DestinationsCarousel() {
                     </span>
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="relative overflow-hidden rounded-lg aspect-video w-full">
-                    <img
-                      src={selectedDestination.image_url || "/placeholder.svg"}
-                      alt={selectedDestination.title}
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute bottom-4 left-4 pointer-events-none">
-                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
-                        Imagen Real
-                      </span>
+                <div className="overflow-y-auto px-6 pb-4 flex-1">
+                  <div className="space-y-4">
+                    <div className="relative overflow-hidden rounded-lg aspect-video w-full">
+                      <img
+                        src={selectedDestination.image_url || "/placeholder.svg"}
+                        alt={selectedDestination.title}
+                        className="object-cover w-full h-full"
+                      />
+                      <div className="absolute bottom-4 left-4 pointer-events-none">
+                        <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
+                          Imagen Real
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold text-purple-700 break-words">
-                      Desde ${selectedDestination.promo_price.toLocaleString()} USD
+                    <div className="flex items-center justify-between">
+                      <p className="text-lg font-semibold text-purple-700 break-words">
+                        Desde ${selectedDestination.promo_price.toLocaleString()} {selectedDestination.currency}
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: "pre-line" }}>
+                      {selectedDestination.description}
                     </p>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: 'pre-line' }}>
-                    {selectedDestination.description}
-                  </p>
-                  <Link href="/cotizacion">
+                    <Link href="/cotizacion">
                     <Button
                       className="w-full bg-primary hover:bg-primary/90"
                       onClick={() => setIsDialogOpen(false)}
                     >
-                      Solicitar cotización
-                    </Button>
-                  </Link>
+                        Solicitar cotización
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             )}
