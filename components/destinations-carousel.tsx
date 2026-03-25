@@ -182,10 +182,10 @@ export function DestinationsCarousel() {
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-lg font-semibold text-purple-700 break-words">
-                      Desde ${selectedDestination.promo_price} USD
+                      Desde ${selectedDestination.promo_price.toLocaleString()} USD
                     </p>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs">
+                  <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: 'pre-line' }}>
                     {selectedDestination.description}
                   </p>
                   <Link href="/cotizacion">
