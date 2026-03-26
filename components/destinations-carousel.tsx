@@ -38,7 +38,7 @@ export function DestinationsCarousel() {
     (currentPage + 1) * itemsPerPage
   );
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchPromotions = async () => {
       try {
         console.log("Promotions loaded");
@@ -88,9 +88,11 @@ export function DestinationsCarousel() {
                         Imagen Real
                       </span>
                     </div>
-                    <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.promo_price.toLocaleString(destination.currency == "USD" ? "en-US" : "es-MX")} {destination.currency}
-                    </div>
+                    {destination.promo_price > 0 && (
+                      <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
+                        Desde ${destination.promo_price.toLocaleString(destination.currency == "USD" ? "en-US" : "es-MX")} {destination.currency}
+                      </div>
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -181,11 +183,13 @@ export function DestinationsCarousel() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-lg font-semibold text-purple-700 break-words">
-                        Desde ${selectedDestination.promo_price.toLocaleString(selectedDestination.currency == "USD" ? "en-US" : "es-MX")} {selectedDestination.currency}
-                      </p>
-                    </div>
+                    {selectedDestination.promo_price > 0 && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold text-purple-700 break-words">
+                          Desde ${selectedDestination.promo_price.toLocaleString(selectedDestination.currency == "USD" ? "en-US" : "es-MX")} {selectedDestination.currency}
+                        </p>
+                      </div>
+                    )}
                     <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: "pre-line" }}>
                       {selectedDestination.description}
                     </p>

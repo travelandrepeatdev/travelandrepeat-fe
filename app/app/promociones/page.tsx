@@ -503,7 +503,7 @@ export default function PromocionesPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Precio Original *</Label>
+                <Label>Precio Original</Label>
                 <Input
                   type="number"
                   value={formData.original_price}
@@ -516,7 +516,7 @@ export default function PromocionesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Precio Promo *</Label>
+                <Label>Precio Promo</Label>
                 <Input
                   type="number"
                   value={formData.promo_price}
@@ -582,7 +582,7 @@ export default function PromocionesPage() {
                   !file ||
                   !formData.title ||
                   !formData.destination ||
-                  formData.promo_price <= 0
+                  formData.promo_price < 0
                 }
               >
                 {editingPromo ? "Guardar Cambios" : "Crear Promoción"}
