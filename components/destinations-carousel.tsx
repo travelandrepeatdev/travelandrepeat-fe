@@ -83,11 +83,6 @@ export function DestinationsCarousel() {
                       alt={destination.title}
                       className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute bottom-4 left-4 pointer-events-none">
-                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
-                        Imagen Real
-                      </span>
-                    </div>
                     {destination.promo_price > 0 && (
                       <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
                         Desde ${destination.promo_price.toLocaleString(destination.currency == "USD" ? "en-US" : "es-MX")} {destination.currency}
@@ -177,11 +172,6 @@ export function DestinationsCarousel() {
                         alt={selectedDestination.title}
                         className="object-cover w-full h-full"
                       />
-                      <div className="absolute bottom-4 left-4 pointer-events-none">
-                        <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
-                          Imagen Real
-                        </span>
-                      </div>
                     </div>
                     {selectedDestination.promo_price > 0 && (
                       <div className="flex items-center justify-between">
