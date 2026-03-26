@@ -1,8 +1,6 @@
 import { QuoteHeader } from "@/components/quote-header";
-import { QuoteForm } from "@/components/quote-form";
 import { Footer } from "@/components/footer";
-import RecaptchaRouterProvider from "@/components/recaptcha/RecaptchaRouterProvider";
-import { CastleIcon, Sparkles } from "lucide-react";
+import { CastleIcon } from "lucide-react";
 
 export const metadata = {
   title: "Blogs - Travel & Repeat",
@@ -34,7 +32,7 @@ export default function BlogsPage() {
             </div>
 
             <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
-              "Estamos contruyendo los blogs..."
+              "Blogs en construcción..."
               <br />
               <br />
               🚧
