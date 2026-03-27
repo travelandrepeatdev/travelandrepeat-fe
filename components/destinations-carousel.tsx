@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import type { Promotion } from "../app/app/lib/types";
 import axios from "axios";
+import { useIsMobile } from "./ui/use-mobile";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -16,8 +17,8 @@ export function DestinationsCarousel() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedDestination, setSelectedDestination] = useState<(Promotion) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const itemsPerPage = 3;
+  const isMobile = useIsMobile();
+  const itemsPerPage = isMobile ? 1 : 3;;
   const totalPages = Math.ceil(destinations.length / itemsPerPage);
 
   const nextPage = () => {
@@ -70,7 +71,7 @@ export function DestinationsCarousel() {
         </div>
 
         <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
             {currentDestinations.map((destination) => (
               <Card
                 key={destination.id}
