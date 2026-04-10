@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import type { Promotion } from "../app/app/lib/types";
-import axios from "axios";
+import { publicApi } from "../app/app/lib/api";
 import { useIsMobile } from "./ui/use-mobile";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -18,7 +18,7 @@ export function DestinationsCarousel() {
   const [selectedDestination, setSelectedDestination] = useState<(Promotion) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isMobile = useIsMobile();
-  const itemsPerPage = isMobile ? 1 : 3;;
+  const itemsPerPage = isMobile ? 1 : 3;
   const totalPages = Math.ceil(destinations.length / itemsPerPage);
 
   const nextPage = () => {
@@ -40,25 +40,21 @@ export function DestinationsCarousel() {
   );
 
   useEffect(() => {
-    const fetchPromotions = async () => {
+    const loadPromotions = async () => {
       try {
+        const data = await publicApi.getPromotions();
+        const mapped = data.map((d) => ({
+          ...d,
+          image_url: d.image_url ? apiBaseUrl + d.image_url : null,
+        }));
+        setDestinations(mapped);
         console.log("Promotions loaded");
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const { data } = await axios.get<Promotion[]>(`${apiBaseUrl}/promotions/promotionListActive`);
-        
-        if (data) {
-          setDestinations(data.map((d) => (
-            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url : null}
-          )));
-        } else {
-          console.error("Failed to get promotions");
-        }
-
-      } catch (err: any) {
-        console.error("Failed to load promotions on page");
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
       }
     };
-    fetchPromotions();
+
+    loadPromotions();
   }, []);
 
   return (

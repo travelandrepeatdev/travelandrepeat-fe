@@ -23,21 +23,30 @@ Products:
 - Code Editor (VSC)
 - Git
 
+### Environments to run the project
+- Local Development (dev)
+- Docker Compose (dev)
+- production (prod)
+
 ## 3. Quick Start
 1. Clone the repository
 
-    git clone <https://github.com/travelandrepeatdev/travelandrepeat-fe.git>
+2. git clone <https://github.com/travelandrepeatdev/travelandrepeat-fe.git>
 
-    cd travelandrepeat-fe
-2. Install dependencies
+3. cd travelandrepeat-fe
+
+### Option 1: Local
+1. Install dependencies
     
     npm i
-3. Verify the build
+2. Verify the build
 
     npm run build
-4. Run it locally
+3. Run it locally
 
     npm run dev
+### Option 2: Docker Compose
+1. docker-compose up -d
 
 ## 4. Notes:
 ### Project structure

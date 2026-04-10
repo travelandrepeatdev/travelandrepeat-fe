@@ -2,7 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { publicApi } from "@/app/app/lib/api";
 
 const STORAGE_KEY = "usd_mxn_rate";
 
@@ -14,33 +14,27 @@ export function CurrencyIndicator( {mobileMenuOpen} : {mobileMenuOpen: boolean} 
     const hour = new Date().getHours();
     const day = new Date().getDay();
     const sundayDay = 0;
-    
     return hour >= 9 && hour < 18 && day != sundayDay;
   };
 
   useEffect(() => {
-    const cached = sessionStorage.getItem(STORAGE_KEY);
-
-    if (cached) {
-      setUsdToMxn(cached);
-      setIsLoading(false);
-      return;
-    }
-
     const fetchRate = async () => {
-      if (!isBusinessHour()) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const { data } = await axios.get(`${apiBaseUrl}/dollar/rate`);
-
-        if (data) {
-          sessionStorage.setItem(STORAGE_KEY, data);
-          setUsdToMxn(data);
+        const cached = sessionStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          setUsdToMxn(cached);
+          setIsLoading(false);
+          return;
         }
+
+        if (!isBusinessHour()) {
+          setIsLoading(false);
+          return;
+        }
+
+        const data = await publicApi.getDollarRate();
+        sessionStorage.setItem(STORAGE_KEY, data);
+        setUsdToMxn(data);
       } catch (error) {
         console.error("Error fetching currency rate:", error);
       } finally {
@@ -56,9 +50,6 @@ export function CurrencyIndicator( {mobileMenuOpen} : {mobileMenuOpen: boolean} 
       return <div className="text-xs text-muted-foreground">USD/MXN: $ --.--</div>;
     }
     return <div className="text-xs text-muted-foreground" style={{ animation: `fadeInUp 0.5s ease-out ${3*0.1}s forwards`}} >USD/MXN: $ --.--</div>;
-  }
-
-  if (mobileMenuOpen) {
   }
 
   return (

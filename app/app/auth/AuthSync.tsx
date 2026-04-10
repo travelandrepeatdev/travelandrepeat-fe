@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { setAuthToken } from "../api/apiClient";
+import { defaultApiAuth } from "../lib/api";
+import { useAuth } from "./AuthContext";
 
 export function AuthSync() {
+  const { login, logout } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    setAuthToken(token);
+    defaultApiAuth.getProfile().then((user) => {
+        login(user as any);
+    }).catch(() => {
+      logout();
+    });
   }, []);
 
   return null;

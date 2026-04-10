@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import type { Client } from "../lib/types"
-import { apiClient } from "../api/apiClient"
+import { defaultApiAuth } from "../lib/api"
 import { useAuth } from "../auth/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
 const clientActionDelete = "CLIENT_DELETE";
 const clientActionUpdate = "CLIENT_UPDATE";
@@ -25,7 +26,7 @@ export default function ClientesPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", country_code: "MX", address: "", notes: "" })
-
+  const { toast } = useToast();
   const { user } = useAuth();
   const hasPermissionDelete = user?.permissions.includes(clientActionDelete);
   const hasPermissionUpdate = user?.permissions.includes(clientActionUpdate);
@@ -56,74 +57,69 @@ export default function ClientesPage() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingClient) {
       
-      apiClient.put<Client>("/clients/client", {
-        ...formData, 
-        id: editingClient.id,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Client updated");
-              
-          setClients((prev) =>
-            prev.map((c) => c.id === editingClient.id
-              ? { ...c, ...formData }
-              : c
-          ));
-        } else {
-          console.error("Failed to update client");
+      try {
+        const response = await defaultApiAuth.putClient({ ...formData, id: editingClient.id} as Client);
+        if (!response) {
+          console.warn("Client not found -> " + editingClient.id);
+          toast({ title: "Alerta", description: `El cliente [${formData.name}] no fue encontrado.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating client: \n", error.response.data);
-      });
+        console.log("Client updated -> ", response.id);
+        setClients((prev) => prev.map((c) => c.id === editingClient.id ? response : c));
+        toast({ title: "Cliente actualizado", description: `[${formData.name}] fue modificado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating client -> " + editingClient.id, error);
+        toast({ title: "Error", description: `No se pudo actualizar el cliente [${formData.name}].`, variant: "destructive" });
+      }
 
     } else {
 
-      apiClient.post<Client>("/clients/client", {
-        ...formData,
-        created_by: user?.userId,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Client saved");
-          setClients((prev) => [...prev, response.data]);
-        } else {
-          console.error("Failed to create client");
+      try {
+        const response = await defaultApiAuth.postClient({  ...formData, created_by: user?.userId} as Client);
+        if (!response) {
+          console.warn("Client not created");
+          toast({ title: "Alerta", description: `No se pudo crear el cliente [${formData.name}].`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error creating client: \n", error.response.data);
-      });
-      
-    }
+        console.log("Client created -> ", response.id);
+        setClients((prev) => [...prev, response]);
+        toast({ title: "Cliente creado", description: `[${formData.name}] fue agregado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error creating client", error);
+        toast({ title: "Error", description: `No se pudo crear el cliente [${formData.name}].`, variant: "destructive" });
+      }
 
+    }
     setDialogOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-
-    apiClient.delete<Client>("/clients/client?clientId=" + id).then((response) => {
-      if (response.data) {
-        console.log("Client deleted");
-        setClients((prev) => prev.filter((c) => c.id !== id))
-        } else {
-          console.error("Failed to delete client");
-        }
-      }).catch((error) => {
-        console.error("Error deleting client: ", error.message);
-      });
+  const handleDelete = async (id: string) => {
+    try {
+      const responseId = await defaultApiAuth.deleteClient(id);
+      if (!responseId) {
+        console.warn("Client not found -> " + id);
+        toast({ title: "Alerta", description: `El cliente [${id}] no fue encontrado.`, variant: "warning" });
+        return;
+      }
+      console.log("Client deleted -> ", responseId);
+      setClients((prev) => prev.filter((c) => c.id !== responseId));
+      toast({ title: "Cliente eliminado", description: `[${responseId}] fue eliminado.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting client -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar el cliente [${id}].`, variant: "destructive" });
+    }
   }
 
   useEffect(() => {
     const fetchClients = async () => {
-      try {
-        console.log("Clients loaded");
-        const response = await apiClient.get<Client[]>("/clients/clientList");
-        setClients(response.data);
-      } catch (err: any) {
-        console.error("Failed to load clients");
-      }
+        const response = await defaultApiAuth.getClients();
+        console.log("Clients list fetched -> ", response.length);
+        setClients(response);
+        toast({ title: "Clientes cargados", description: `Se cargaron ${response.length} clientes.`, variant: "success" });
     };
-
     fetchClients();
   }, []);
 

@@ -11,10 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import type { Provider, ProviderCategory } from "../lib/types"
-import { apiClient } from "../api/apiClient"
+import { defaultApiAuth } from "../lib/api"
 import { useAuth } from "../auth/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
 const providerActionDelete = "PROVIDER_DELETE";
 const providerActionUpdate = "PROVIDER_UPDATE";
@@ -42,7 +42,7 @@ export default function ProveedoresPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null)
   const { user } = useAuth();
-
+  const { toast } = useToast();
   const hasPermissionDelete = user?.permissions.includes(providerActionDelete);
   const hasPermissionUpdate = user?.permissions.includes(providerActionUpdate);
   const hasPermissionCreate = user?.permissions.includes(providerActionCreate);
@@ -80,71 +80,68 @@ export default function ProveedoresPage() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingProvider) {
 
-      apiClient.put<Provider>("/providers/provider", {
-        ...formData, 
-        id: editingProvider.id,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Provider updated");
-      
-          setProviders((prev) => prev.map((p) => p.id === editingProvider.id
-            ? { ...p, ...formData }
-            : p))
-                          
-        } else {
-          console.error("Failed to update provider");
+      try {
+        const updatedProvider = await defaultApiAuth.putProvider({ ...formData, id: editingProvider.id } as Provider);
+        if (!updatedProvider) {
+          console.warn("Provider not found -> " + editingProvider.id);
+          toast({ title: "Alerta", description: `El proveedor [${formData.name}] no fue encontrado.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating provider: \n", error.response.data);
-      });
+        console.log("Provider updated -> ", updatedProvider.id);
+        setProviders((prev) => prev.map((p) => p.id === editingProvider.id ? updatedProvider : p))
+        toast({ title: "Proveedor actualizado", description: `[${formData.name}] fue modificado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating provider", error);
+        toast({ title: "Error", description: `No se pudo actualizar el proveedor [${formData.name}].`, variant: "destructive" });
+      }
 
     } else {
-      
-      apiClient.post<Provider>("/providers/provider", {
-        ...formData,
-        created_by: user?.userId,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Provider saved");
-          setProviders((prev) => [...prev, response.data])
-        } else {
-          console.error("Failed to create provider");
+
+      try {
+        const newProvider = await defaultApiAuth.postProvider({ ...formData, created_by: user?.userId} as Provider);
+        if (!newProvider) {
+          console.warn("Provider not created");
+          toast({ title: "Alerta", description: `No se pudo crear el proveedor [${formData.name}].`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error creating provider: \n", error.response.data);
-      });
+        console.log("Provider created -> ", newProvider.id);
+        setProviders((prev) => [...prev, newProvider])
+        toast({ title: "Proveedor creado", description: `[${formData.name}] fue creado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error creating provider", error);
+        toast({ title: "Error", description: `No se pudo crear el proveedor [${formData.name}].`, variant: "destructive" });
+      }
 
     }
     setDialogOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-
-    apiClient.delete<Provider>("/providers/provider?providerId=" + id).then((response) => {
-      if (response.data) {
-        console.log("Provider deleted");
-        setProviders((prev) => prev.filter((p) => p.id !== id))
-        } else {
-          console.error("Failed to delete provider");
-        }
-      }).catch((error) => {
-        console.error("Error deleting provider: ", error.message);
-      });
-      
+  const handleDelete = async (id: string) => {
+    try {
+      const responseId = await defaultApiAuth.deleteProvider(id);
+      if (!responseId) {
+        console.warn("Provider not found -> " + id);
+        toast({ title: "Alerta", description: `El proveedor [${id}] no fue encontrado.`, variant: "warning" });
+        return;
+      }
+      console.log("Provider deleted -> ", responseId);
+      setProviders((prev) => prev.filter((p) => p.id !== responseId))
+      toast({ title: "Proveedor eliminado", description: `El proveedor [${id}] fue eliminado correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting provider -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar el proveedor [${id}].`, variant: "destructive" });
+    }
   }
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      try {
-        console.log("Providers loaded");
-        const response = await apiClient.get<Provider[]>("/providers/providerList");
-        setProviders(response.data);
-      } catch (err: any) {
-        console.error("Failed to load providers");
-      }
+      const response = await defaultApiAuth.getProviders();
+      console.log("Provider list fetched -> ", response.length);
+      setProviders(response);
+      toast({ title: "Proveedores cargados", description: `Se cargaron ${response.length} proveedores.`, variant: "success" });
     };
     fetchBlogs();
   }, []);

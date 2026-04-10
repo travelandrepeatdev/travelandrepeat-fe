@@ -16,6 +16,15 @@ export interface User {
   role: string | null
 }
 
+export interface UserProfile {
+    userId: string;
+    name: string;
+    avatar_url: string;
+    role: string;
+    permissions: string[];
+    accessToken: string;
+}
+
 export interface Role {
   role_id: string
   name: string
@@ -141,12 +150,9 @@ export interface Promotion {
   title: string
   description: string
   destination: string
-  original_price: number
   promo_price: number
   currency: Currency
   image_url: string | null
-  start_date: string
-  end_date: string
   is_active: boolean
   created_by: string | null
   created_at: string | null
@@ -180,23 +186,6 @@ export interface AuditLog {
   created_at: string
 }
 
-// --- API Response types ---
-
-export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-  code?: string
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean
-  data: T[]
-  total: number
-  page: number
-  per_page: number
-}
-
 export interface Dashboard0 {
   totalClients: string | null
   totalProviders: string | null
@@ -210,4 +199,14 @@ export interface Dashboard1 {
 
 export interface Dashboard2 {
   
+}
+
+// --- API Response types ---
+
+export interface PaginatedResponse<T> {
+  success: boolean
+  data: T[]
+  total: number
+  page: number
+  per_page: number
 }

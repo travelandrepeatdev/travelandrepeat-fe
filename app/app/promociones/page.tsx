@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
 import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -15,18 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import type { Promotion, Currency } from "../lib/types"
 import { useAuth } from "../auth/AuthContext"
-import { apiClient } from "../api/apiClient"
+import { defaultApiAuth } from "../lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 const promotionActionDelete = "PROMOTION_DELETE";
 const promotionActionUpdate = "PROMOTION_UPDATE";
 const promotionActionCreate = "PROMOTION_CREATE";
 const promotionActionEnableDisable = "PROMOTION_ENABLE_DISABLE";
-
-const formatedDate = (date: string) => {
-  const result = date ? date.slice(0, 10) : "";
-  return result;
-}
-
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PromocionesPage() {
@@ -38,11 +33,11 @@ export default function PromocionesPage() {
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    title: "", description: "", destination: "", original_price: 0, promo_price: 0,
-    currency: "USD" as Currency, start_date: "", end_date: "", is_active: true, created_by: "",
+    title: "", description: "", destination: "", promo_price: 0,
+    currency: "USD" as Currency, is_active: true, created_by: "",
     image_url: ""
   })
-
+  const { toast } = useToast();
   const hasPermissionDelete = user?.permissions.includes(promotionActionDelete);
   const hasPermissionUpdate = user?.permissions.includes(promotionActionUpdate);
   const hasPermissionCreate = user?.permissions.includes(promotionActionCreate);
@@ -57,8 +52,8 @@ export default function PromocionesPage() {
     setEditingPromo(null)
     setFile(null)
     setFormData({ 
-      title: "", description: "", destination: "", original_price: 0, promo_price: 0, 
-      currency: "USD", start_date: "", end_date: "", is_active: true, created_by: "",
+      title: "", description: "", destination: "", promo_price: 0, 
+      currency: "USD", is_active: true, created_by: "",
       image_url: ""
     })
     setDialogOpen(true)
@@ -69,14 +64,14 @@ export default function PromocionesPage() {
     setFile(null)
     setFormData({
       title: promo.title, description: promo.description, destination: promo.destination,
-      original_price: promo.original_price, promo_price: promo.promo_price, currency: promo.currency, 
-      start_date: formatedDate(promo.start_date), end_date: formatedDate(promo.end_date), is_active: promo.is_active,
+      promo_price: promo.promo_price, currency: promo.currency, 
+      is_active: promo.is_active,
       created_by: "", image_url: promo.image_url || ""
     })
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
 
     const form = new FormData()
     form.append("image", !file ? "" : file)
@@ -94,16 +89,20 @@ export default function PromocionesPage() {
         { type: "application/json" }
       ))
 
-      apiClient.put("/promotions/promotion", form).then((response) => {
-        if (response.data) {
-          console.log("Promotion updated");
-          setPromotions((prev) => prev.map((p) => p.id === editingPromo.id ? { ...p, ...response.data } : p))
-        } else {
-          console.error("Failed to update promotion");
+      try {
+        const response: any = await defaultApiAuth.putPromotion(form);
+        if (!response) {
+          console.warn("Promotion not found -> " + editingPromo.id);
+          toast({ title: "Alerta", description: `La promoción [${formData.title}] no fue encontrada.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating promotion: \n", error.response.data);
-      });
+        console.log("Promotion updated -> ", response.id);
+        setPromotions((prev) => prev.map((p) => p.id === editingPromo.id ? response : p));
+        toast({ title: "Promoción actualizada", description: `[${response.title}] fue modificado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating promotion -> " + editingPromo.id, error);
+        toast({ title: "Error", description: `No se pudo actualizar la promoción [${formData.title}].`, variant: "destructive" });
+      }
 
     } else {
 
@@ -118,58 +117,60 @@ export default function PromocionesPage() {
         { type: "application/json" }
       ))
 
-      apiClient.post("/promotions/promotion", form).then((response) => {
-          if (response.data) {
-            console.log("Promotion saved");
-            setPromotions((prev) => [...prev, response.data])
-          } else {
-            console.error("Failed to create blog");
-          }
-        }).catch((error) => {
-          console.error("Error creating blog: \n", error.response.data);
-        });
+      try {
+        const response: any = await defaultApiAuth.postPromotion(form);
+        if (!response) {
+          console.warn("Promotion not created");
+          toast({ title: "Alerta", description: `No se pudo crear la promoción [${formData.title}].`, variant: "warning" });
+          return;
+        }
+        console.log("Promotion created -> ", response.id);
+        toast({ title: "Promoción creada", description: `[${response.title}] fue creada correctamente.`, variant: "success" });
+        setPromotions((prev) => [...prev, response])
+      } catch (error) {
+        console.error("Error creating promotion", error);
+        toast({ title: "Error", description: `No se pudo crear la promoción [${formData.title}].`, variant: "destructive" });
+      }
 
     }
     setDialogOpen(false)
   }
 
-  const toggleActive = (id: string) => {
-
-    apiClient.put<Promotion>("/promotions/promotionEnableDisable?promotionId=" + id).then((response) => {
-        if (response.data) {
-          console.log("Promotion active: " + response.data.is_active);
-          setPromotions((prev) => prev.map((p) => p.id === id ? 
-          { ...p, is_active: !p.is_active } 
-          : p))
-        } else {
-          console.error("Failed to enable/disable promotion");
-        }
-      }).catch((error) => {
-        console.error("Error enable/disable promotion: \n", error.response.data);
-      });
-
-  }
-
-  const handleDelete = (id: string) => {
-
-    apiClient.delete<Promotion>("/promotions/promotion?promotionId=" + id).then((response) => {
-      if (response.data) {
-        console.log("Promotion deleted");
-        setPromotions((prev) => prev.filter((p) => p.id !== id))
-        } else {
-          console.error("Failed to delete promotion");
-        }
-      }).catch((error) => {
-        console.error("Error deleting promotion: \n", error.message);
+  const toggleActive = async (id: string) => {
+    try {
+      const response = await defaultApiAuth.putPromotionEnableDisable(id);
+      if (!response) {
+        console.warn("Promotion not found -> " + id);
+        toast({ title: "Alerta", description: `La promoción [${id}] no fue encontrada.`, variant: "warning" });
+        return;
       }
-    );
- 
+      console.log("Promotion toggled active -> ", response.is_active);
+      setPromotions((prev) => prev.map((p) => p.id === id ? { ...p, is_active: !p.is_active } : p));
+      toast({ title: `Promoción ${response.is_active ? "activada" : "desactivada"}`, description: `La promoción [${id}] fue ${response.is_active ? "activada" : "desactivada"} correctamente.`, variant: response.is_active ? "success" : "warning" });
+    } catch (error) {
+      console.error("Error toggling promotion -> " + id, error);
+      toast({ title: "Error", description: `No se pudo cambiar el estado de la promoción [${id}].`, variant: "destructive" });
+    }
   }
 
-  const discount = (orig: number, promo: number) =>
-    orig > 0 ? Math.round(((orig - promo) / orig) * 100) : 0
+  const handleDelete = async (id: string) => {
+    try {      
+      const responseId = await defaultApiAuth.deletePromotion(id);
+      if (!responseId) {
+        console.warn("Promotion not found -> " + id);
+        toast({ title: "Alerta", description: `La promoción [${id}] no fue encontrada.`, variant: "warning" });
+        return;
+      }
+      console.log("Promotion deleted -> ", responseId);
+      setPromotions((prev) => prev.filter((p) => p.id !== responseId));
+      toast({ title: "Promoción eliminada", description: `La promoción [${id}] fue eliminada correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting promotion -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar la promoción [${id}].`, variant: "destructive" });
+    }
+  }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setFile(e.target.files[0])
     }
@@ -177,13 +178,10 @@ export default function PromocionesPage() {
 
   useEffect(() => { 
     const fetchPromotions = async () => {
-      try {
-        console.log("Promotions loaded");
-        const response = await apiClient.get<Promotion[]>("/promotions/promotionList");
-        setPromotions(response.data);
-      } catch (err: any) {
-        console.error("Failed to load promotions");
-      }
+        const response = await defaultApiAuth.getPromotions();
+        console.log("Promotions list fetched -> ", response.length);
+        setPromotions(response);
+        toast({ title: "Promociones cargadas", description: `Se cargaron ${response.length} promociones.`, variant: "success" });
     };
     fetchPromotions();
   }, []);
@@ -282,19 +280,8 @@ export default function PromocionesPage() {
                   <span className="text-xl font-bold text-primary">
                     ${promo.promo_price.toLocaleString()} {promo.currency}
                   </span>
-                  <span className="text-sm text-muted-foreground line-through">
-                    ${promo.original_price.toLocaleString()}
-                  </span>
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-green-800"
-                  >
-                    -{discount(promo.original_price, promo.promo_price)}%
-                  </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {promo.start_date} - {promo.end_date}
-                </p>
+
                 <div className="flex gap-1">
                   {hasPermissionEnableDisable && (
                     <Button
@@ -362,11 +349,7 @@ export default function PromocionesPage() {
                   <TableRow>
                     <TableHead>Título</TableHead>
                     <TableHead>Destino</TableHead>
-                    <TableHead className="text-right">
-                      Precio Original
-                    </TableHead>
-                    <TableHead className="text-right">Precio Promo</TableHead>
-                    <TableHead>Vigencia</TableHead>
+                    <TableHead className="text-right">Precio Original</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -378,31 +361,18 @@ export default function PromocionesPage() {
                         {promo.title}
                       </TableCell>
                       <TableCell>{promo.destination}</TableCell>
-                      <TableCell className="text-right">
-                        ${promo.original_price.toLocaleString()}{" "}
-                        {promo.currency}
-                      </TableCell>
                       <TableCell className="text-right font-medium text-primary">
                         ${promo.promo_price.toLocaleString()} {promo.currency}
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {promo.start_date} / {promo.end_date}
-                      </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={promo.is_active ? "default" : "secondary"}
-                        >
+                        <Badge variant={promo.is_active ? "default" : "secondary"}>
                           {promo.is_active ? "Activa" : "Inactiva"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {hasPermissionEnableDisable && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => toggleActive(promo.id)}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => toggleActive(promo.id)}>
                               {promo.is_active ? (
                                 <ToggleRight className="h-4 w-4 text-green-600" />
                               ) : (
@@ -503,19 +473,6 @@ export default function PromocionesPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Precio Original</Label>
-                <Input
-                  type="number"
-                  value={formData.original_price}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      original_price: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
                 <Label>Precio Promo</Label>
                 <Input
                   type="number"
@@ -546,28 +503,7 @@ export default function PromocionesPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Fecha inicio</Label>
-                <Input
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, start_date: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Fecha fin</Label>
-                <Input
-                  type="date"
-                  value={formData.end_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, end_date: e.target.value })
-                  }
-                />
-              </div>
-            </div>
+            
             <div className="space-y-2">
               <Label>Subir imagen</Label>
               <Input type="file" onChange={handleFileChange} accept="image/*" />

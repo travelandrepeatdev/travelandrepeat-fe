@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CastleIcon, ArrowLeft, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
-import axios, { AxiosError } from "axios";
 import { Footer } from "@/components/footer";
+import { useRouter } from "next/navigation";
+import { defaultApiAuth } from "../app/lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,14 +18,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      console.log("User has token, redirecting to the app :)");
-      // Redirigir al dashboard o página principal del agente
-      window.location.href = "/app";
-    }
+    defaultApiAuth.getProfile().then((response: any) => {
+      if (!response) {
+        console.warn("User token not found, invalid or expired.");
+      } else {
+        console.log(`User ${response.name} has cookie token, redirecting to the app :)`);
+        router.push("/app");
+      }
+    }).catch(() => {
+      console.warn("User token not found, invalid or expired.");
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,62 +38,14 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const response = await axios.post(apiBaseUrl + "/auth/login", {
-        email,
-        password,
+    await defaultApiAuth.postLogin({ email, password }).then(() => {
+        console.log("Login successful, redirecting to the app :)");
+        router.push("/app");
+      }).catch((err: any) => {
+        setError(err.message);
       });
-
-      const axiosError = new AxiosError();
-      if (!response.data) {
-        axiosError.message = "Usuario no encontrado";
-        axiosError.code = "USER_NOT_FOUND";
-        throw axiosError;
-      } else {
-
-        if (response.data.accessToken) {
-          localStorage.setItem("accessToken", response.data.accessToken);
-          // Redirigir al dashboard o página principal del agente
-          window.location.href = "/app";
-        } else {
-          axiosError.message = "Contraseña incorrecta. Intenta de nuevo.";
-          axiosError.code = "INVALID_PASSWORD";
-          throw axiosError;
-        }
-
-        if (!response.data.isActive) {
-          axiosError.message = "Tu cuenta ha sido deshabilitada. Contacta al administrador.";
-          axiosError.code = "ACCOUNT_DISABLED";
-          throw axiosError;
-        }
-      }
-
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const errorMessage =
-          err.response?.data?.error || "Error al iniciar sesión";
-        const errorCode = err.code;
-
-        switch (errorCode) {
-          case "USER_NOT_FOUND":
-            setError("El usuario no existe. Verifica tu correo electrónico.");
-            break;
-          case "INVALID_PASSWORD":
-            setError("Contraseña incorrecta. Intenta de nuevo.");
-            break;
-          case "ACCOUNT_DISABLED":
-            setError("Tu cuenta ha sido deshabilitada. Contacta al administrador.");
-            break;
-          default:
-            setError(errorMessage);
-        }
-      } else {
-        setError("Error de conexión. Verifica tu conexión a internet.");
-      }
-    } finally {
+      
       setIsLoading(false);
-    }
   };
 
   return (

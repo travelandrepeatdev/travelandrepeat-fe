@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { Plus, Pencil, Trash2, Search, Grid3X3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,7 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Permission, Role, RolePermission } from "../../lib/types"
-import { apiClient } from "../../api/apiClient"
+import { defaultApiAuth } from "../../lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PermisosPage() {
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -22,14 +23,12 @@ export default function PermisosPage() {
   const [search, setSearch] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPerm, setEditingPerm] = useState<Permission | null>(null)
-
   const [formData, setFormData] = useState({ name: "", description: "" })
-
   const filtered = permissions.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.description || "").toLowerCase().includes(search.toLowerCase())
   )
-
+  const { toast } = useToast();
   const getPermissionRoles = (permId: string) => {
     const roleIds = rolePermissions.filter((rp) => rp.permission_id === permId).map((rp) => rp.role_id)
     return roles.filter((r) => roleIds.includes(r.role_id))
@@ -55,102 +54,86 @@ export default function PermisosPage() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingPerm) {
 
-      apiClient.put("/permissions/permission", {
-        permission_id: editingPerm.permission_id,
-        name: formData.name,
-        description: formData.description
-      }).then((response) => {
-        if (response.data) {
-          console.log("Permission updated");
-          
-          setPermissions((prev) =>
-            prev.map((p) =>
-              p.permission_id === response.data.permission_id
-                ? { ...p, name: formData.name, description: formData.description }
-                : p
-            ));
-          
-        } else {
-          console.error("Failed to update permission");
+      try {
+        const updatedPerm = await defaultApiAuth.putPermission({ permission_id: editingPerm.permission_id, name: formData.name, description: formData.description } as Permission);
+        if (!updatedPerm) {
+          console.warn("Permission not found -> " + editingPerm.permission_id);
+          toast({ title: "Alerta", description: `El permiso [${formData.name}] no fue encontrado.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating permission: \n", error.response.data);
-      });
-
-    } else {
-      const newPerm: Permission = {
-        permission_id: "",
-        name: formData.name,
-        description: formData.description,
-        created_at: null,
+        console.log("Permission updated -> ", updatedPerm.permission_id);
+        setPermissions((prev) => prev.map((p) => p.permission_id === updatedPerm.permission_id ? updatedPerm : p));
+        toast({ title: "Permiso actualizado", description: `El permiso [${updatedPerm.name}] fue actualizado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating permission -> " + editingPerm.permission_id, error);
+        toast({ title: "Error", description: `No se pudo actualizar el permiso [${formData.name}].`, variant: "destructive" });
       }
 
-      apiClient.post("/permissions/permission", newPerm).then((response) => {
-          if (response.data) {
-            console.log("Permission saved");
-            setPermissions((prev) => [...prev, response.data])
-          } else {
-            console.error("Failed to create permission");
-          }
-        }).catch((error) => {
-          console.error("Error creating permission: \n", error.response.data);
-        });
+    } else {
+
+      try {
+        const newPerm = await defaultApiAuth.postPermission({ name: formData.name, description: formData.description } as Permission);
+        if (!newPerm) {
+          console.warn("Failed to create permission");
+          toast({ title: "Alerta", description: `No se pudo crear el permiso [${formData.name}].`, variant: "warning" });
+          return;
+        }
+        console.log("Permission created -> ", newPerm.permission_id);
+        setPermissions((prev) => [...prev, newPerm])
+        toast({ title: "Permiso creado", description: `El permiso [${newPerm.name}] fue creado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error creating permission", error);
+        toast({ title: "Error", description: `No se pudo crear el permiso [${formData.name}].`, variant: "destructive" });
+      }
+
     }
     setDialogOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-
-    apiClient.delete("/permissions/permission?permissionId=" + id).then((response) => {
-          if (response.data) {
-            console.log("Permission deleted");
-            setPermissions((prev) => prev.filter((p) => p.permission_id !== id))
-          } else {
-            console.error("Failed to delete permission");
-          }
-        }).catch((error) => {
-          console.error("Error deleting permission: \n", error.response.data);
-        });
+  const handleDelete = async (id: string) => {
+    try {
+      const responseId = await defaultApiAuth.deletePermission(id);
+      if (!responseId) {
+        console.warn("Permission not found -> " + id);
+        toast({ title: "Alerta", description: `El permiso [${id}] no fue encontrado.`, variant: "warning" });
+        return;
+      }
+      console.log("Permission deleted -> ", responseId);
+      setPermissions((prev) => prev.filter((p) => p.permission_id !== responseId));
+      toast({ title: "Permiso eliminado", description: `El permiso [${responseId}] fue eliminado correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting permission -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar el permiso [${id}].`, variant: "destructive" });
+    }
   }
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchPermissions = async () => {
-      try {
-        console.log("Permissions loaded");
-        const response = await apiClient.get<Permission[]>("/permissions/permissionList");
-        setPermissions(response.data);
-      } catch (err: any) {
-        console.error("Failed to load permissions");
-      }
+      const response = await defaultApiAuth.getPermissions();
+      console.log("Permissions fetched -> ", response.length);
+      setPermissions(response);
+      toast({ title: "Permisos cargados", description: `Se cargaron ${response.length} permisos.`, variant: "success" });
     };
     fetchPermissions();
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchRolePermissions = async () => {
-      try {
-        console.log("Role - Permissions loaded");
-        const response = await apiClient.get<RolePermission[]>("/roles/rolePermissionList");
-        setRolePermissions(response.data);
-      } catch (err: any) {
-        console.error("Failed to load role - permissions");
-      }
+      const response = await defaultApiAuth.getRolePermissions();
+      console.log("Role-Permissions fetched -> ", response.length);
+      setRolePermissions(response);
     };
     fetchRolePermissions();
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchRoles = async () => {
-      try {
-        console.log("Roles loaded");
-        const response = await apiClient.get<Role[]>("/roles/roleList");
-        setRoles(response.data);
-      } catch (err: any) {
-        console.error("Failed to load roles");
-      }
+      const response = await defaultApiAuth.getRoles();
+      console.log("Roles fetched -> ", response.length);
+      setRoles(response);
     };
     fetchRoles();
   }, []);
@@ -311,7 +294,7 @@ export default function PermisosPage() {
                   </TableHeader>
                   <TableBody>
                     {Object.entries(permissionGroups).map(([module, perms]) => (
-                      <>
+                      <Fragment key={module}>
                         <TableRow key={`header-${module}`} className="bg-muted/50">
                           <TableCell colSpan={roles.length + 1} className="font-medium capitalize text-foreground">
                             {module}
@@ -336,7 +319,7 @@ export default function PermisosPage() {
                             })}
                           </TableRow>
                         ))}
-                      </>
+                      </Fragment>
                     ))}
                   </TableBody>
                 </Table>
