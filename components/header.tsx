@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, CastleIcon } from "lucide-react";
 import { CurrencyIndicator } from "./currency-indicator";
 import Link from "next/link"
+import { useIsMobile } from "./ui/use-mobile";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const navLinks = [
     { name: "Contacto", href: "#contact", disabled: false },
@@ -24,11 +26,15 @@ export function Header() {
             <span className="font-serif text-xl font-bold text-primary">Travel & Repeat</span>
           </a>
 
-          <Link href="/login">
-            <Button style={{ margin: `20px`,}} >
-              Login Agente
-            </Button>
-          </Link>
+          {isMobile ? (
+            <Link href="/cotizacion">
+              <Button style={{ margin: `20px`,}} className="bg-accent hover:bg-accent/90">Formulario de cotización</Button>
+            </Link>
+          ) : (
+            <Link href="/login">
+              <Button style={{ margin: `20px`,}} >Login Agente</Button>
+            </Link>
+          )}
         </div>
 
         {/* Desktop Navigation */}
@@ -37,7 +43,6 @@ export function Header() {
             <a
               key={link.name}
               href={link.href}
-              //target={link.target}
               className={`text-sm font-medium transition-colors duration-300 ${
                   link.disabled
                     ? "text-foreground/30 cursor-not-allowed pointer-events-none"
@@ -58,11 +63,7 @@ export function Header() {
         </nav>
 
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
+        <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
           {mobileMenuOpen ? (
             <X className="h-6 w-6" />
           ) : (
@@ -75,12 +76,8 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border px-4 py-4 animate-fade-in-up">
           <nav className="flex flex-col gap-4">
-            {navLinks.map((link, index) => (
-              <a
-                key={link.name}
-                href={link.href}
-                //target={link.target}
-                className={`text-sm font-medium transition-colors duration-300 ${
+            {navLinks.map((link) => (
+              <a key={link.name} href={link.href} className={`text-sm font-medium transition-colors duration-300 ${
                   link.disabled
                     ? "text-foreground/30 cursor-not-allowed pointer-events-none"
                     : "text-foreground/80 hover:text-primary"
@@ -90,10 +87,11 @@ export function Header() {
                 {link.name}
               </a>
             ))}
-            
-            <Link href="/cotizacion">
-            <Button size="sm" className="bg-accent hover:bg-accent/90 w-full">Formulario de cotización</Button>
+
+            <Link href="/login">
+            <Button size="sm" className="w-full">Login Agente</Button>
             </Link>
+
             <CurrencyIndicator mobileMenuOpen={mobileMenuOpen} />
 
           </nav>
