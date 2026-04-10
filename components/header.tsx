@@ -28,7 +28,7 @@ export function Header() {
 
           {isMobile ? (
             <Link href="/cotizacion">
-              <Button className="bg-accent hover:bg-accent/90">Formulario de cotización</Button>
+              <Button style={{ marginRight: `20px`,}} className="bg-accent hover:bg-accent/90"><span>Formulario de cotización</span></Button>
             </Link>
           ) : (
             <Link href="/login">
