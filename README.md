@@ -1,7 +1,7 @@
 # Travel & Repeat Frontend web page
 
 ## 1. Overview
-Travel Agency dedicated to an Agent specialized and certified in Disney and Universal Studios.
+Travel Agency dedicated to the agent specialized and certified in Disney and Universal Studios.
 
 `Travel & Repeat` Brand
 
@@ -43,8 +43,8 @@ Products:
 ### Project structure
 📦 travelandrepeat-be  
 ┣ 📂 app → content app in sections  
-┣ 📂 components → main component  
-┣ 📂 public → static imaged  
+┣ 📂 components → main components  
+┣ 📂 public → static images  
 ┗ 📂 styles → css global styles
 
 ## 5. Agreement and additional information →

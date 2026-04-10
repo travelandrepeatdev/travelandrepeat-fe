@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
 import type { Promotion } from "../app/app/lib/types";
 import axios from "axios";
+import { useIsMobile } from "./ui/use-mobile";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -16,8 +17,8 @@ export function DestinationsCarousel() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedDestination, setSelectedDestination] = useState<(Promotion) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const itemsPerPage = 3;
+  const isMobile = useIsMobile();
+  const itemsPerPage = isMobile ? 1 : 3;;
   const totalPages = Math.ceil(destinations.length / itemsPerPage);
 
   const nextPage = () => {
@@ -38,7 +39,7 @@ export function DestinationsCarousel() {
     (currentPage + 1) * itemsPerPage
   );
 
-  useEffect(() => { 
+  useEffect(() => {
     const fetchPromotions = async () => {
       try {
         console.log("Promotions loaded");
@@ -47,7 +48,7 @@ export function DestinationsCarousel() {
         
         if (data) {
           setDestinations(data.map((d) => (
-            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url: null}
+            {...d, image_url: d.image_url ? apiBaseUrl + d.image_url : null}
           )));
         } else {
           console.error("Failed to get promotions");
@@ -70,7 +71,7 @@ export function DestinationsCarousel() {
         </div>
 
         <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
             {currentDestinations.map((destination) => (
               <Card
                 key={destination.id}
@@ -83,14 +84,11 @@ export function DestinationsCarousel() {
                       alt={destination.title}
                       className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute bottom-4 left-4 pointer-events-none">
-                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
-                        Imagen Real
-                      </span>
-                    </div>
-                    <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
-                      Desde ${destination.promo_price}
-                    </div>
+                    {destination.promo_price > 0 && (
+                      <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-base font-semibold">
+                        Desde ${destination.promo_price.toLocaleString(destination.currency == "USD" ? "en-US" : "es-MX")} {destination.currency}
+                      </div>
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -153,9 +151,9 @@ export function DestinationsCarousel() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] flex flex-col">
             {selectedDestination && (
-              <div className="overflow-y-auto overflow-x-hidden px-6 py-4">
+              <div className="overflow-y-auto overflow-x-hidden py-4">
                 <DialogHeader className="space-y-2 mb-4">
                   <DialogTitle className="font-serif text-2xl break-words pr-8">
                     {selectedDestination.title}
@@ -167,35 +165,34 @@ export function DestinationsCarousel() {
                     </span>
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="relative overflow-hidden rounded-lg aspect-video w-full">
-                    <img
-                      src={selectedDestination.image_url || "/placeholder.svg"}
-                      alt={selectedDestination.title}
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute bottom-4 left-4 pointer-events-none">
-                      <span className="text-white/30 font-bold text-lg md:text-xl transform -rotate-12 select-none">
-                        Imagen Real
-                      </span>
+                <div className="overflow-y-auto px-6 pb-4 flex-1">
+                  <div className="space-y-4">
+                    <div className="relative overflow-hidden rounded-lg aspect-video w-full">
+                      <img
+                        src={selectedDestination.image_url || "/placeholder.svg"}
+                        alt={selectedDestination.title}
+                        className="object-cover w-full h-full"
+                      />
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold text-purple-700 break-words">
-                      Desde ${selectedDestination.promo_price} USD
+                    {selectedDestination.promo_price > 0 && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold text-purple-700 break-words">
+                          Desde ${selectedDestination.promo_price.toLocaleString(selectedDestination.currency == "USD" ? "en-US" : "es-MX")} {selectedDestination.currency}
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs" style={{ whiteSpace: "pre-line" }}>
+                      {selectedDestination.description}
                     </p>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere text-xs">
-                    {selectedDestination.description}
-                  </p>
-                  <Link href="/cotizacion">
+                    <Link href="/cotizacion">
                     <Button
                       className="w-full bg-primary hover:bg-primary/90"
                       onClick={() => setIsDialogOpen(false)}
                     >
-                      Solicitar cotización
-                    </Button>
-                  </Link>
+                        Solicitar cotización
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             )}
