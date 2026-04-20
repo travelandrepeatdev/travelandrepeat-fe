@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { FormEvent, useEffect, useRef } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
-import axios from "axios";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useRecaptcha } from "@/components/recaptcha/useRecaptcha";
 import { Loader2 } from "lucide-react";
+import { publicApi } from "@/app/app/lib/api";
 
 export function QuoteForm() {
-  const { getToken } = useRecaptcha();
+  const { getRecaptchaToken } = useRecaptcha();
 
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,54 +73,25 @@ export function QuoteForm() {
     }
   }, [submitted]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      if (!apiBaseUrl) throw new Error("API no configurada");
-
-      const recaptchaToken = await getToken("submit_quote");
-      const response = await axios.post(
-        apiBaseUrl + "/mail/sendQuotationForm",
-        {
-          ...formData,
-          recaptchaToken,
-        },
-      );
-
-      // errors logged in backend side
-      if (response.status === 403 || response.status === 500) {
-        setError(
-          response?.data?.message ||
-            "Error de servidor al enviar la cotización",
-        );
-      }
-
+      const recaptchaToken = await getRecaptchaToken("submit_quote");
+      const response = await publicApi.postQuotation({ ...formData, recaptchaToken });
       setSubmitted(true);
-    } catch (err) {
-      console.error("Error al enviar cotización:", err);
-      if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.message || "Error al enviar la cotización",
-        );
-      } else {
-        setError(
-          err instanceof Error ? err.message : "Error al enviar la cotización",
-        );
-      }
+      console.log(response);
+    } catch (error) {
+      console.error("Error sending quotation form", error);
+      setError("Error: " + error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,

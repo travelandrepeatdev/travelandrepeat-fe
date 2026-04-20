@@ -1,13 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { CastleIcon, LayoutDashboard, Users, Building2, DollarSign, Receipt, Megaphone, FileText, ShieldCheck, UserCog, KeyRound, ClipboardList, ChevronDown } from "lucide-react"
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarSeparator } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useAuth } from "@/app/app/auth/AuthContext"
 import { useEffect, useState } from "react"
-import { apiClient } from "@/app/app/api/apiClient"
+import { defaultApiAuth } from "@/app/app/lib/api"
+import { useAuth } from "@/app/app/auth/AuthContext"
+import { UserProfile } from "@/app/app/lib/types"
 
 const agentMenuItems = [
   { title: "Inicio", href: "/app", icon: LayoutDashboard, permission: "MODULE_DASHBOARD" },
@@ -26,41 +27,20 @@ const adminMenuItems = [
   { title: "Auditoría", href: "/app/admin/auditoria", icon: ClipboardList, permission: "MODULE_AUDITORIA" },
 ]
 
-type UserProfile = {
-    userId: string;
-    name: string;
-    avatar_url: string;
-    role: string;
-    permissions: string[];
-};
-
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const { login } = useAuth();
-  const { logout } = useAuth();
-  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { logout } = useAuth();
 
   useEffect(() => {
-    apiClient.get("/auth/profile").then((response) => {
-        if (response.data) {
-          console.log("User profile fetched: " + response.data.userId + " -> " + response.data.name);
-          setProfile(response.data);
-          const token = localStorage.getItem("accessToken");
-          if (token) {
-            login(token, response.data);
-          } else {
-            console.warn("No access token found in localStorage");
-            logout();
-            router.push("/login");
-          }
+    defaultApiAuth.getProfile().then((response: any) => {
+      if (response) {
+          console.log("User profile info: " + response.userId + " -> " + response.name);
+          setProfile(response);
         } else {
           console.warn("No user data in profile response");
           logout();
         }
-      }).catch((error) => {
-        console.error("Error fetching user profile:", error.message);
-        logout();
       });
   }, []);
 

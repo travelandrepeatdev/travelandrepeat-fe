@@ -13,8 +13,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import type { Blog, BlogStatus } from "../lib/types"
-import { apiClient } from "../api/apiClient"
+import { defaultApiAuth } from "../lib/api"
 import { useAuth } from "../auth/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
 const blogActionDelete = "BLOG_DELETE";
 const blogActionUpdate = "BLOG_UPDATE";
@@ -31,7 +32,7 @@ export default function BlogsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null)
   const { user } = useAuth();
-
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: "", slug: "", content: "", excerpt: "", cover_image_url: "", status: "Borrador" as BlogStatus,
   })
@@ -68,70 +69,67 @@ export default function BlogsPage() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
-
+  const handleSave = async () => {
     if (editingBlog) {
-
-      apiClient.put<Blog>("/blogs/blog", {
-        ...formData, 
-        id: editingBlog.id,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Blog updated");
-          setBlogs((prev) => prev.map((b) => b.id === editingBlog.id ? { ...b, ...formData } : b))
-                    
-        } else {
-          console.error("Failed to update blog");
+      try {
+        const updatedBlog = await defaultApiAuth.putBlog({ ...formData, id: editingBlog.id } as Blog);
+        if (!updatedBlog) {
+          console.warn("Blog not found -> " + editingBlog.id);
+          toast({ title: "Alerta", description: `El blog [${formData.title}] no fue encontrado.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating blog: \n", error.response.data);
-      });
+        console.log("Blog updated -> ", updatedBlog.id);
+        setBlogs((prev) => prev.map((b) => b.id === editingBlog.id ? updatedBlog : b));
+        toast({ title: "Blog actualizado", description: `El blog [${updatedBlog.title}] fue actualizado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating blog -> " + editingBlog.id, error);
+        toast({ title: "Error", description: `No se pudo actualizar el blog [${formData.title}].`, variant: "destructive" });
+      }
 
     } else {
 
-      apiClient.post<Blog>("/blogs/blog", {
-        ...formData,
-        created_by: user?.userId,
-      }).then((response) => {
-        if (response.data) {
-          console.log("Blog saved");
-          setBlogs((prev) => [...prev, response.data]);
-        } else {
-          console.error("Failed to create blog");
+      try {
+        const newBlog = await defaultApiAuth.postBlog({ ...formData, created_by: user?.userId } as Blog);
+        if (!newBlog) {
+          console.warn("Error creating blog");
+          toast({ title: "Alerta", description: `No se pudo crear el blog [${formData.title}].`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error creating blog: \n", error.response.data);
-      });
+        console.log("Blog created -> ", newBlog.id);
+        setBlogs((prev) => [...prev, newBlog]);
+        toast({ title: "Blog creado", description: `El blog [${newBlog.title}] fue creado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error creating blog", error);
+        toast({ title: "Error", description: `No se pudo crear el blog [${formData.title}].`, variant: "destructive" });
+      }
 
     }
     setDialogOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-
-    apiClient.delete<Blog>("/blogs/blog?blogId=" + id).then((response) => {
-      if (response.data) {
-        console.log("Blog deleted");
-        setBlogs((prev) => prev.filter((b) => b.id !== id))
-        } else {
-          console.error("Failed to delete blog");
-        }
-      }).catch((error) => {
-        console.error("Error deleting blog: \n", error.message);
+  const handleDelete = async (id: string) => {
+    try {
+      const responseId = await defaultApiAuth.deleteBlog(id);
+      if (!responseId) {
+        console.warn("Blog not found -> " + id);
+        toast({ title: "Alerta", description: `El blog [${id}] no fue encontrado.`, variant: "warning" });
+        return;
       }
-    );
-
+      console.log("Blog deleted -> ", responseId);
+      setBlogs((prev) => prev.filter((b) => b.id !== responseId));
+      toast({ title: "Blog eliminado", description: `El blog [${responseId}] fue eliminado correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting blog -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar el blog [${id}].`, variant: "destructive" });
+    }
   }
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      try {
-        console.log("Blogs loaded");
-        const response = await apiClient.get<Blog[]>("/blogs/blogList");
-        setBlogs(response.data);
-      } catch (err: any) {
-        console.error("Failed to load blogs");
-      }
+      const response = await defaultApiAuth.getBlogs();
+      console.log("Blogs list fetched -> ", response.length);
+      setBlogs(response);
+      toast({ title: "Blogs cargados", description: `Se cargaron ${response.length} blogs.`, variant: "success" });
     };
     fetchBlogs();
   }, []);

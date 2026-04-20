@@ -13,8 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Permission, Role, RolePermission, User, UserRole } from "../../lib/types"
-import { apiClient } from "../../api/apiClient"
-import { useAuth } from "../../auth/AuthContext"
+import { defaultApiAuth } from "../../lib/api"
+import { useToast } from "@/hooks/use-toast" 
 
 export default function RolesPage() {
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -29,9 +29,8 @@ export default function RolesPage() {
   const [editingRole, setEditingRole] = useState<Role | null>(null)
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [selectedPermIds, setSelectedPermIds] = useState<string[]>([])
-  const { user } = useAuth()
   const [formData, setFormData] = useState({ name: "", description: "" })
-
+  const { toast } = useToast();
   const filtered = roles.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase()) ||
     (r.description || "").toLowerCase().includes(search.toLowerCase())
@@ -74,81 +73,69 @@ export default function RolesPage() {
     setUsersDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingRole) {
 
-      apiClient.put("/roles/role", {
-        role_id: editingRole.role_id,
-        name: formData.name,
-        description: formData.description
-      }).then((response) => {
-        if (response.data) {
-          console.log("Role updated");
-          
-          setRoles((prev) =>
-            prev.map((r) =>
-              r.role_id === response.data.role_id
-                ? { ...r, name: formData.name, description: formData.description }
-                : r
-            ));
-          
-        } else {
-          console.error("Failed to update role");
+      try {
+        const updatedRole = await defaultApiAuth.putRole({ ...formData, role_id: editingRole.role_id } as Role);
+        if (!updatedRole) {
+          console.warn("Role not found -> " + editingRole.role_id);
+          toast({ title: "Alerta", description: `El rol [${formData.name}] no fue encontrado.`, variant: "warning" });
+          return;
         }
-      }).catch((error) => {
-        console.error("Error updating role: \n", error.response.data);
-      });
+        console.log("Role updated -> ", updatedRole);
+        setRoles((prev) => prev.map((r) => r.role_id === updatedRole.role_id ? updatedRole : r));
+        toast({ title: "Rol actualizado", description: `El rol [${updatedRole.name}] fue actualizado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error updating role -> " + editingRole.role_id, error);
+        toast({ title: "Error", description: `No se pudo actualizar el rol [${formData.name}].`, variant: "destructive" });
+      }
       
     } else {
 
-      apiClient.post("/roles/role", {
-        role_id: null,
-        name: formData.name,
-        description: formData.description
-      }).then((response) => {
-          if (response.data) {
-            console.log("Role saved");
-            setRoles((prev) => [...prev, response.data])
-          } else {
-            console.error("Failed to create role");
-          }
-        }).catch((error) => {
-          console.error("Error creating role: \n", error.response.data);
-        });
-
+      try {
+        const newRole = await defaultApiAuth.postRole({ ...formData } as Role);
+        if (!newRole) {
+          console.warn("Role not created");
+          toast({ title: "Alerta", description: `No se pudo crear el rol [${formData.name}].`, variant: "warning" });
+          return;
+        }
+        console.log("Role created -> ", newRole.role_id);
+        setRoles((prev) => [...prev, newRole]);
+        toast({ title: "Rol creado", description: `El rol [${newRole.name}] fue creado correctamente.`, variant: "success" });
+      } catch (error) {
+        console.error("Error creating role", error);
+        toast({ title: "Error", description: `No se pudo crear el rol [${formData.name}].`, variant: "destructive" });
+      }
+      
     }
     setDialogOpen(false)
   }
 
-  const handleDelete = (id: string) => {
-
-    apiClient.delete("/roles/role?roleId=" + id).then((response) => {
-          if (response.data) {
-            console.log("Role deleted");
-            setRoles((prev) => prev.filter((r) => r.role_id !== id))
-            setRolePermissions((prev) => prev.filter((rp) => rp.role_id !== id))
-          } else {
-            console.error("Failed to delete role");
-          }
-        }).catch((error) => {
-          console.error("Error deleting role: \n", error.response.data);
-        });
-
+  const handleDelete = async (id: string) => {
+    try {
+      const responseId = await defaultApiAuth.deleteRole(id);
+      if (!responseId) {
+        console.warn("Role not found -> " + id);
+        toast({ title: "Alerta", description: `El rol [${id}] no fue encontrado.`, variant: "warning" });
+        return;
+      }
+      console.log("Role deleted -> ", responseId);
+      setRoles((prev) => prev.filter((r) => r.role_id !== responseId))
+      setRolePermissions((prev) => prev.filter((rp) => rp.role_id !== responseId))
+      toast({ title: "Rol eliminado", description: `El rol [${responseId}] fue eliminado correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error deleting role -> " + id, error);
+      toast({ title: "Error", description: `No se pudo eliminar el rol [${id}].`, variant: "destructive" });
+    }
   }
 
   const handleSavePermissions = () => {
     const withoutCurrent = rolePermissions.filter((rp) => rp.role_id !== selectedRole?.role_id)
-    const newMappings = selectedPermIds.map((pid) => ({ role_id: selectedRole?.role_id, permission_id: pid }))
+    const newMappings: any = selectedPermIds.map((pid) => ({ role_id: selectedRole?.role_id, permission_id: pid }))
     
-    apiClient.put("/roles/rolePermissionList", newMappings.length == 0 ? [{role_id: selectedRole?.role_id}] : newMappings).then((response) => {
-          if (response.data) {
-            console.log("Role - Permissions saved");
-            setRolePermissions([...withoutCurrent, ...response.data])
-          } else {
-            console.error("Failed to save role - permission");
-          }
-        }).catch((error) => {
-          console.error("Error saving role - permission: \n", error.response.data);
+    defaultApiAuth.putRolePermissions(newMappings.length == 0 ? [{role_id: selectedRole?.role_id}] : newMappings).then((response: any) => {
+            setRolePermissions([...withoutCurrent, ...response])
         });
 
     setPermDialogOpen(false)
@@ -168,70 +155,51 @@ export default function RolesPage() {
     return acc
   }, {})
 
-  useEffect(() => { 
-      const fetchRoles = async () => {
-        try {
-          console.log("Roles loaded");
-          const response = await apiClient.get<Role[]>("/roles/roleList");
-          setRoles(response.data);
-        } catch (err: any) {
-          console.error("Failed to load roles");
-        }
-      };
-      fetchRoles();
-    }, []);
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const response = await defaultApiAuth.getRoles();
+      console.log("Roles list fetched -> ", response.length);
+      setRoles(response);
+      toast({ title: "Roles cargados", description: `Se cargaron ${response.length} roles.`, variant: "success" });
+    };
+    fetchRoles();
+  }, []);
 
-  useEffect(() => { 
-      const fetchRolePermissions = async () => {
-        try {
-          console.log("Role - Permissions loaded");
-          const response = await apiClient.get<RolePermission[]>("/roles/rolePermissionList");
-          setRolePermissions(response.data);
-        } catch (err: any) {
-          console.error("Failed to load role - permissions");
-        }
-      };
-      fetchRolePermissions();
-    }, []);
+  useEffect(() => {
+    const fetchRolePermissions = async () => {
+      const response = await defaultApiAuth.getRolePermissions();
+      console.log("Role-Permissions fetched -> ", response.length);
+      setRolePermissions(response);
+    };
+    fetchRolePermissions();
+  }, []);
 
-  useEffect(() => { 
-      const fetchUserRole = async () => {
-        try {
-          console.log("User - Role loaded");
-          const response = await apiClient.get<UserRole[]>("/users/userRoleList");
-          setUserRoles(response.data);
-        } catch (err: any) {
-          console.error("Failed to load user - role");
-        }
-      };
-      fetchUserRole();
-    }, []);
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const response = await defaultApiAuth.getUserRoles();
+      console.log("User-Roles fetched -> ", response.length);
+      setUserRoles(response);
+    };
+    fetchUserRole();
+  }, []);
 
-  useEffect(() => { 
-      const fetchUsers = async () => {
-        try {
-          console.log("Users loaded");
-          const response = await apiClient.get<User[]>("/users/userList");
-          setUsers(response.data);
-        } catch (err: any) {
-          console.error("Failed to load users");
-        }
-      };
-      fetchUsers();
-    }, []);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await defaultApiAuth.getUsers();
+      console.log("Users list fetched -> ", response.length);
+      setUsers(response);
+    };
+    fetchUsers();
+  }, []);
 
-  useEffect(() => { 
-      const fetchPermissions = async () => {
-        try {
-          console.log("Permissions loaded");
-          const response = await apiClient.get<Permission[]>("/permissions/permissionList");
-          setPermissions(response.data);
-        } catch (err: any) {
-          console.error("Failed to load permissions");
-        }
-      };
-      fetchPermissions();
-    }, []);
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      const response = await defaultApiAuth.getPermissions();
+      console.log("Permissions fetched -> ", response.length);
+      setPermissions(response);
+    };
+    fetchPermissions();
+  }, []);
 
   return (
     <div className="space-y-6">

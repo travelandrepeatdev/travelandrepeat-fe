@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build: .
+    image: tyr-fe
+    container_name: tyr-fe
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6Lf3UHEsAAAAAIq8_g7nX-ZG6kSdOPR2V4LorNOj
+    command: npm run dev

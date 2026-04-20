@@ -3,10 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Building2, DollarSign, Receipt, Megaphone, TrendingUp, TrendingDown, FileText } from "lucide-react"
 import { mockCommissions, mockExpenses, mockAuditLogs } from "./lib/mock-data"
-import { apiClient } from "./api/apiClient";
 import { Dashboard0, Dashboard1, Dashboard2 } from "./lib/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/AuthContext";
+import { defaultApiAuth } from "./lib/api";
 
 export default function App() {
   const [dashboard0, setDashboard0] = useState<Dashboard0>({
@@ -28,17 +28,11 @@ export default function App() {
   const hasPermissionFinancial = user?.permissions.includes("DASHBOARD_FINANCIAL");
   const hasPermissionActivity = user?.permissions.includes("DASHBOARD_ACTIVITY");
 
-  useEffect(() => { 
-    const fetchDashboard0 = async () => {
-      try {
-        console.log("Promotions loaded");
-        const response = await apiClient.get<Dashboard0>("/dashboard/stats");
-        setDashboard0(response.data);
-      } catch (err: any) {
-        console.error("Failed to load promotions on dashboard");
-      }
-    };
-    fetchDashboard0();
+  useEffect(() => {
+    defaultApiAuth.getStats().then((response: any) => {
+      setDashboard0(response);
+      console.log("Stats ready!");
+    });
   }, []);
 
   const totalCommissionsMXN = mockCommissions
