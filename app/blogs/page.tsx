@@ -1,53 +1,72 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { QuoteHeader } from "@/components/quote-header";
 import { Footer } from "@/components/footer";
-import { CastleIcon } from "lucide-react";
+import { BlogCard } from "@/components/blog-card";
+import { BlogHero } from "@/components/blog-hero";
+import { publicApi } from "@/app/app/lib/api";
+import type { Blog } from "@/app/app/lib/types";
+import { Spinner } from "@/components/ui/spinner";
 
-export const metadata = {
-  title: "Blogs - Travel & Repeat",
-  description: "Informacion que te ayudara para tu próximo viaje",
-};
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function BlogsPage() {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await publicApi.getPublishedBlogs();
+        const mapped = response.map((d) => ({
+          ...d,
+          cover_image_url: d.cover_image_url ? apiBaseUrl + d.cover_image_url : null,
+        }));
+        setBlogs(mapped);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
+
   return (
     <>
       <QuoteHeader />
-      <section
-        id="home"
-        className="relative overflow-hidden bg-gradient-to-br from-secondary/50 via-background to-accent/50"
-      >
-        <div className="container px-4 py-20 md:py-20 md:px-6">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-8 animate-scale-in flex justify-center leading-7 tracking-normal">
-              <img
-                src="/LOGO-EVA-CIRCULO.png"
-                alt="Travel Repeat Logo"
-                width={180}
-                height={180}
-                className="transition-transform duration-500 hover:scale-110"
-              />
-            </div>
+      <BlogHero />
 
-            <div>
-              <CastleIcon className="inline-block h-20 w-20 text-primary animate-bounce" />
-            </div>
-
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance mb-6">
-              "Blogs en construcción..."
-              <br />
-              <br />
-              🚧
-              <br />
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Estamos creando algo increíble para ti!
-              </span>
-            </h1>
+      {/* Blog List Section */}
+      <section className="bg-background py-16 md:py-24">
+        <div className="container px-4 md:px-6">
+          <div className="mx-auto max-w-6xl">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Spinner className="size-12 text-primary" />
+                <p className="mt-4 text-muted-foreground">Cargando blogs...</p>
+              </div>
+            ) : blogs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <p className="text-xl text-muted-foreground">
+                  Pronto tendremos contenido increible para ti.
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Estamos trabajando en nuevos articulos.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {blogs.map((blog) => (
+                  <BlogCard key={blog.id} blog={blog} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -z-10" />
       </section>
+
       <Footer />
     </>
   );

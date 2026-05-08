@@ -1,6 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
+// @ts-ignore: CSS module declarations may not be recognized in this TS environment
 import "./globals.css";
 
 // <CHANGE> Using Inter for body and Poppins for headings

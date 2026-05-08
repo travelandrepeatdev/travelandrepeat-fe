@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="flex flex-col items-center gap-4">
         <Spinner className="size-12 text-primary" />
         <p className="text-lg font-medium text-muted-foreground">
-          Cargando blogs...
+          Cargando articulo...
         </p>
       </div>
     </div>

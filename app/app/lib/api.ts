@@ -60,6 +60,8 @@ export const publicApi = {
   getDollarRate: () => getOne<string>("/dollar/rate"),
   getPromotions: () => getList<Promotion>("/promotions/promotionListActive"),
   postQuotation: (payload: any) => postData<string>("/mail/sendQuotationForm", payload),
+  getPublishedBlogs: () => getList<Blog>("/blogs/published"),
+  getBlogBySlug: (slug: string) => getOne<Blog>(`/blogs/slug/${slug}`)
 }
 
 // --- Generic CRUD helpers with AUTH --------------------------------------------------
@@ -138,8 +140,8 @@ export const defaultApiAuth = {
 
   // Blogs
   getBlogs: () => fetch<Blog[]>("/blogs"),
-  postBlog: (payload: Blog) => createData<Blog>("/blogs", payload),
-  putBlog: (payload: Blog) => updateData<Blog>("/blogs", payload),
+  postBlog: (payload: FormData) => createData("/blogs", payload),
+  putBlog: (payload: FormData) => updateData("/blogs", payload),
   deleteBlog: (blogId: string) => deleteData<string>("/blogs/" + blogId),
 
   // Users

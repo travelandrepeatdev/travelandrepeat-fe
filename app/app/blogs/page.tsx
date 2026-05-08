@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, ChangeEvent } from "react"
 import { Plus, Pencil, Trash2, Search, Eye, FileText, FilePenLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,7 +36,7 @@ export default function BlogsPage() {
   const [formData, setFormData] = useState({
     title: "", slug: "", content: "", excerpt: "", cover_image_url: "", status: "Borrador" as BlogStatus,
   })
-
+  const [file, setFile] = useState<File | null>(null)
   const filtered = blogs.filter((b) => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase())
     const matchStatus = filterStatus === "all" || b.status === filterStatus
@@ -50,14 +50,22 @@ export default function BlogsPage() {
   const hasPermissionUpdate = user?.permissions.includes(blogActionUpdate);
   const hasPermissionCreate = user?.permissions.includes(blogActionCreate);
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.[0]) {
+        setFile(e.target.files[0])
+      }
+    };
+
   const openCreate = () => {
     setEditingBlog(null)
+    setFile(null)
     setFormData({ title: "", slug: "", content: "", excerpt: "", cover_image_url: "", status: "Borrador" })
     setDialogOpen(true)
   }
 
   const openEdit = (blog: Blog) => {
     setEditingBlog(blog)
+    setFile(null)
     setFormData({
       title: blog.title, 
       slug: blog.slug, 
@@ -70,9 +78,25 @@ export default function BlogsPage() {
   }
 
   const handleSave = async () => {
+
+    const form = new FormData()
+    form.append("image", !file ? "" : file);
+
     if (editingBlog) {
+
+      const obj = {
+        ...formData,
+        id: editingBlog.id
+      };
+
+      form.append("blogRequest",
+      new Blob(
+        [JSON.stringify(obj)],
+        { type: "application/json" }
+      ))
+
       try {
-        const updatedBlog = await defaultApiAuth.putBlog({ ...formData, id: editingBlog.id } as Blog);
+        const updatedBlog: any = await defaultApiAuth.putBlog(form);
         if (!updatedBlog) {
           console.warn("Blog not found -> " + editingBlog.id);
           toast({ title: "Alerta", description: `El blog [${formData.title}] no fue encontrado.`, variant: "warning" });
@@ -88,8 +112,19 @@ export default function BlogsPage() {
 
     } else {
 
+      const obj = {
+        ...formData,
+        created_by: user?.userId,
+      };
+
+      form.append("blogRequest",
+      new Blob(
+        [JSON.stringify(obj)],
+        { type: "application/json" }
+      ))
+
       try {
-        const newBlog = await defaultApiAuth.postBlog({ ...formData, created_by: user?.userId } as Blog);
+        const newBlog: any = await defaultApiAuth.postBlog(form);
         if (!newBlog) {
           console.warn("Error creating blog");
           toast({ title: "Alerta", description: `No se pudo crear el blog [${formData.title}].`, variant: "warning" });
@@ -270,7 +305,11 @@ export default function BlogsPage() {
             <div className="space-y-2"><Label>Extracto *</Label><Textarea value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} /></div>
             <div className="space-y-2"><Label>Contenido *</Label><Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={10} className="font-mono text-sm" /></div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2"><Label>Imagen de portada (URL)</Label><Input value={formData.cover_image_url} onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })} placeholder="/imagen.jpg" /></div>
+              <div className="space-y-2">
+                <Label>Imagen de portada (URL)</Label>
+                <Input type="file" onChange={handleFileChange} accept="image/*" />
+                {/* <Input value={formData.cover_image_url} onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })} placeholder="/imagen.jpg" /> */}
+              </div>
               <div className="space-y-2"><Label>Estado</Label>
                 <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val as BlogStatus })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -280,7 +319,7 @@ export default function BlogsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={!formData.title || !formData.excerpt || !formData.content}>
+              <Button onClick={handleSave} disabled={!formData.title || !formData.excerpt || !formData.content || !file}>
                 {editingBlog ? "Guardar Cambios" : "Crear Artículo"}
               </Button>
             </div>

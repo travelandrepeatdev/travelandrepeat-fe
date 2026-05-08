@@ -5,7 +5,6 @@ import { CastleIcon, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { CurrencyIndicator } from "./currency-indicator";
 
-
 export function QuoteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -16,7 +15,7 @@ export function QuoteHeader() {
             Travel & Repeat
           </span>
         </Link>
-        <CurrencyIndicator />
+        <CurrencyIndicator mobileMenuOpen={false} />
         <Link href="/">
           <Button variant="ghost" size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
