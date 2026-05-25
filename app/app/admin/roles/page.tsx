@@ -139,6 +139,7 @@ export default function RolesPage() {
         });
 
     setPermDialogOpen(false)
+    toast({ title: "Permisos guardados", description: `Los permisos del rol [${selectedRole?.name}] fueron guardados correctamente.`, variant: "success" });
   }
 
   const togglePermission = (permId: string) => {
