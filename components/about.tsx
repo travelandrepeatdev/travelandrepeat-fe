@@ -113,6 +113,12 @@ export function About() {
                 alt="Certificación 6"
                 className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
               />
+
+              <img
+                src="/travel-certification-badge-7.webp"
+                alt="Certificación 7"
+                className="w-full transition-all duration-300 hover:scale-130 hover:rotate-2 hover:shadow-xl"
+              />
             </div>
           </div>
         </div>
