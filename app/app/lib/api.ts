@@ -187,6 +187,7 @@ export const defaultApiAuth = {
   getPromotions: () => fetch<Promotion[]>("/promotions"),
   postPromotion: (payload: FormData) => createData("/promotions", payload),
   putPromotion: (payload: FormData) => updateData("/promotions", payload),
+  putPromotionOrder: (payload: Promotion[]) => updateListData("/promotions/order", payload),
   deletePromotion: (promotionId: string) => deleteData<string>("/promotions/" + promotionId),
   putPromotionEnableDisable: (promotionId: string) => updateData<Promotion>("/promotions/" + promotionId + "/enable-disable", {}),
 }

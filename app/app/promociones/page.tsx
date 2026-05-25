@@ -1,7 +1,7 @@
 "use client"
 
-import { ChangeEvent, useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight } from "lucide-react"
+import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight, GripVertical, Save } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,11 +17,13 @@ import type { Promotion, Currency } from "../lib/types"
 import { useAuth } from "../auth/AuthContext"
 import { defaultApiAuth } from "../lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const promotionActionDelete = "PROMOTION_DELETE";
 const promotionActionUpdate = "PROMOTION_UPDATE";
 const promotionActionCreate = "PROMOTION_CREATE";
 const promotionActionEnableDisable = "PROMOTION_ENABLE_DISABLE";
+const promotionActionOrder = "PROMOTION_ORDER";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PromocionesPage() {
@@ -31,17 +33,22 @@ export default function PromocionesPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
+
+  // Drag state
+  const dragIndex = useRef<number | null>(null)
+
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "", description: "", destination: "", promo_price: 0,
     currency: "USD" as Currency, is_active: true, created_by: "",
-    image_url: ""
+    image_url: "", order_number: 0
   })
   const { toast } = useToast();
   const hasPermissionDelete = user?.permissions.includes(promotionActionDelete);
   const hasPermissionUpdate = user?.permissions.includes(promotionActionUpdate);
   const hasPermissionCreate = user?.permissions.includes(promotionActionCreate);
   const hasPermissionEnableDisable = user?.permissions.includes(promotionActionEnableDisable);
+  const hasPermissionOrder = user?.permissions.includes(promotionActionOrder);
 
   const filtered = promotions.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -54,7 +61,7 @@ export default function PromocionesPage() {
     setFormData({ 
       title: "", description: "", destination: "", promo_price: 0, 
       currency: "USD", is_active: true, created_by: "",
-      image_url: ""
+      image_url: "", order_number: promotions.length > 0 ? Math.max(...promotions.map(p => p.order_number)) + 1 : 1
     })
     setDialogOpen(true)
   }
@@ -66,7 +73,7 @@ export default function PromocionesPage() {
       title: promo.title, description: promo.description, destination: promo.destination,
       promo_price: promo.promo_price, currency: promo.currency, 
       is_active: promo.is_active,
-      created_by: "", image_url: promo.image_url || ""
+      created_by: "", image_url: promo.image_url || "", order_number: promo.order_number
     })
     setDialogOpen(true)
   }
@@ -176,6 +183,45 @@ export default function PromocionesPage() {
     }
   };
 
+  // --- Drag & Drop handlers ---
+  const handleDragStart = (index: number) => {
+    dragIndex.current = index
+  }
+
+  const handleDragEnter = (index: number) => {
+    if (dragIndex.current === null || dragIndex.current === index) return
+    const from = dragIndex.current
+    dragIndex.current = index
+    setPromotions((prev) => {
+      const updated = [...prev]
+      const [dragged] = updated.splice(from, 1)
+      updated.splice(index, 0, dragged)
+      return updated.map((promo, idx) => ({ ...promo, order_number: idx + 1 })) // Update order_number based on new index
+    })
+  }
+
+  const handleDragEnd = () => {
+    dragIndex.current = null
+  }
+
+  const handleSaveOrder = async () => {
+    try {      
+      const response = await defaultApiAuth.putPromotionOrder(promotions);
+      if (!response) {
+        console.warn("Promotions not saved -> ");
+        toast({ title: "Alerta", description: `Las promociones no fueron guardadas.`, variant: "warning" });
+        return;
+      }
+      console.log("Promotions order saved -> ", response);
+      setPromotions(response);
+      toast({ title: "Promociones ordenadas", description: `Se guardaron las promociones correctamente.`, variant: "success" });
+    } catch (error) {
+      console.error("Error saving promotion order -> ", error);
+      toast({ title: "Error", description: `No se pudo guardar el orden de las promociones.`, variant: "destructive" });
+    }
+  }
+  // --- End ---
+
   useEffect(() => { 
     const fetchPromotions = async () => {
         const response = await defaultApiAuth.getPromotions();
@@ -190,33 +236,18 @@ export default function PromocionesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-foreground">
-            Promociones
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Gestiona las promociones y ofertas de viajes
-          </p>
+          <h1 className="font-serif text-2xl font-bold text-foreground">Promociones</h1>
+          <p className="text-sm text-muted-foreground">Gestiona las promociones y ofertas de viajes</p>
         </div>
         <div className="flex gap-2">
           <div className="flex rounded-lg border border-border">
-            <Button
-              variant={viewMode === "cards" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("cards")}
-              className="rounded-r-none"
-            >
+            <Button variant={viewMode === "cards" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("cards")} className="rounded-r-none">
               <LayoutGrid className="h-4 w-4" />
             </Button>
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("table")}
-              className="rounded-l-none"
-            >
+            <Button variant={viewMode === "table" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("table")} className="rounded-l-none">
               <TableIcon className="h-4 w-4" />
             </Button>
           </div>
-
           {hasPermissionCreate && (
             <Button onClick={openCreate} className="gap-2">
               <Plus className="h-4 w-4" />
@@ -226,280 +257,222 @@ export default function PromocionesPage() {
         </div>
       </div>
 
-      <div className="relative w-full sm:w-72">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Buscar promociones..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
+      <Tabs defaultValue="list">
+        <TabsList>
+          <TabsTrigger value="list">Listado</TabsTrigger>
+          {hasPermissionOrder && (
+            <TabsTrigger value="order">Ordenar para landing</TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Card View */}
-      {viewMode === "cards" ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* ── LIST TAB ── */}
+        <TabsContent value="list" className="space-y-4 mt-4">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Buscar promociones..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
 
-          {filtered.map((promo) => (
-            <Card key={promo.id} className="overflow-hidden">
-              
-              {promo.image_url && (
-                <div className="relative aspect-video w-full overflow-hidden">
-                  <Image
-                    src={apiBaseUrl + promo.image_url}
-                    alt={promo.title}
-                    fill
-                    className="object-cover"
-                  />
-                  {!promo.is_active && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                      <Badge variant="secondary" className="text-sm">
-                        Inactiva
-                      </Badge>
+          {viewMode === "cards" ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((promo) => (
+                <Card key={promo.id} className="overflow-hidden">
+                  {promo.image_url && (
+                    <div className="relative aspect-video w-full overflow-hidden">
+                      <Image src={apiBaseUrl + promo.image_url} alt={promo.title} fill className="object-cover" />
+                      {!promo.is_active && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <Badge variant="secondary" className="text-sm">Inactiva</Badge>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
-              
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg font-serif">
-                    {promo.title}
-                  </CardTitle>
-                  <Badge variant={promo.is_active ? "default" : "secondary"}>
-                    {promo.is_active ? "Activa" : "Inactiva"}
-                  </Badge>
-                </div>
-                <CardDescription>{promo.destination}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {promo.description}
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-primary">
-                    ${promo.promo_price.toLocaleString()} {promo.currency}
-                  </span>
-                </div>
-
-                <div className="flex gap-1">
-                  {hasPermissionEnableDisable && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleActive(promo.id)}
-                      title={promo.is_active ? "Desactivar" : "Activar"}
-                    >
-                      {promo.is_active ? (
-                        <ToggleRight className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <ToggleLeft className="h-4 w-4" />
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-lg font-serif">{promo.title}</CardTitle>
+                      <Badge variant={promo.is_active ? "default" : "secondary"}>
+                        {promo.is_active ? "Activa" : "Inactiva"}
+                      </Badge>
+                    </div>
+                    <CardDescription>{promo.destination}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground line-clamp-2">{promo.description}</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-bold text-primary">${promo.promo_price.toLocaleString()} {promo.currency}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => toggleActive(promo.id)} title={promo.is_active ? "Desactivar" : "Activar"}>
+                        {promo.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(promo)}><Pencil className="h-4 w-4" /></Button>
+                      {hasPermissionDelete && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild><Button variant="ghost" size="sm"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Eliminar promoción</AlertDialogTitle>
+                              <AlertDialogDescription>¿Estás seguro de eliminar "{promo.title}"?</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(promo.id)}>Eliminar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
-                    </Button>
-                  )}
-
-                  {hasPermissionUpdate && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEdit(promo)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-
-                  {hasPermissionDelete && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Eliminar promoción
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            ¿Estás seguro de eliminar "{promo.title}"?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(promo.id)}
-                          >
-                            Eliminar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Destino</TableHead>
+                        <TableHead className="text-right">Precio Promo</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((promo, idx) => (
+                        <TableRow key={promo.id}>
+                          <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
+                          <TableCell className="font-medium">{promo.title}</TableCell>
+                          <TableCell>{promo.destination}</TableCell>
+                          <TableCell className="text-right font-medium text-primary">${promo.promo_price.toLocaleString()} {promo.currency}</TableCell>
+                          <TableCell>
+                            <Badge variant={promo.is_active ? "default" : "secondary"}>{promo.is_active ? "Activa" : "Inactiva"}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {hasPermissionEnableDisable && (
+                                <Button variant="ghost" size="icon" onClick={() => toggleActive(promo.id)}>{promo.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4" />}</Button>
+                              )}
+                              {hasPermissionUpdate && (
+                                <Button variant="ghost" size="icon" onClick={() => openEdit(promo)}><Pencil className="h-4 w-4" /></Button>
+                              )}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader><AlertDialogTitle>Eliminar</AlertDialogTitle><AlertDialogDescription>¿Estás seguro?</AlertDialogDescription></AlertDialogHeader>
+                                  <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(promo.id)}>Eliminar</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Destino</TableHead>
-                    <TableHead className="text-right">Precio Original</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((promo) => (
-                    <TableRow key={promo.id}>
-                      <TableCell className="font-medium">
-                        {promo.title}
-                      </TableCell>
-                      <TableCell>{promo.destination}</TableCell>
-                      <TableCell className="text-right font-medium text-primary">
-                        ${promo.promo_price.toLocaleString()} {promo.currency}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={promo.is_active ? "default" : "secondary"}>
-                          {promo.is_active ? "Activa" : "Inactiva"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {hasPermissionEnableDisable && (
-                            <Button variant="ghost" size="icon" onClick={() => toggleActive(promo.id)}>
-                              {promo.is_active ? (
-                                <ToggleRight className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <ToggleLeft className="h-4 w-4" />
-                              )}
-                            </Button>
-                          )}
+          )}
+        </TabsContent>
 
-                          {hasPermissionUpdate && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEdit(promo)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          )}
+        {/* ── ORDER TAB ── */}
+        <TabsContent value="order" className="mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="font-serif">Orden de visualización</CardTitle>
+                  <CardDescription>
+                    Arrastra y suelta las promociones para definir el orden en que aparecen en la sección
+                    "Destinos y paquetes populares" de la landing page.
+                  </CardDescription>
+                </div>
+                <Button onClick={handleSaveOrder} className="gap-2 min-w-[140px]">
+                  <Save className="h-4 w-4" />
+                  Guardar orden
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {promotions.map((promo, index) => (
+                  <div
+                    key={promo.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragEnter={() => handleDragEnter(index)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className="flex items-center gap-4 rounded-lg border border-border bg-background p-3 cursor-grab active:cursor-grabbing hover:border-primary/50 hover:bg-muted/30 transition-all select-none"
+                  >
+                    {/* Index badge */}
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+                      {index + 1}
+                    </span>
 
-                          {hasPermissionDelete && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Eliminar</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    ¿Estás seguro?
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>
-                                    Cancelar
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(promo.id)}
-                                  >
-                                    Eliminar
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                    {/* Drag handle */}
+                    <GripVertical className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+
+                    {/* Thumbnail */}
+                    {promo.image_url ? (
+                      <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                        <Image src={apiBaseUrl + promo.image_url} alt={promo.title} fill className="object-cover" />
+                      </div>
+                    ) : (
+                      <div className="h-12 w-16 flex-shrink-0 rounded-md bg-muted" />
+                    )}
+
+                    {/* Info */}
+                    <div className="flex flex-1 flex-col gap-0.5 min-w-0">
+                      <span className="font-medium text-foreground truncate">{promo.title}</span>
+                      <span className="text-xs text-muted-foreground truncate">{promo.destination}</span>
+                    </div>
+
+                    {/* Price */}
+                    <span className="flex-shrink-0 font-semibold text-primary text-sm">
+                      ${promo.promo_price.toLocaleString()} {promo.currency}
+                    </span>
+
+                    {/* Status badge */}
+                    <Badge
+                      variant={promo.is_active ? "default" : "secondary"}
+                      className="flex-shrink-0"
+                    >
+                      {promo.is_active ? "Activa" : "Inactiva"}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+
+              {promotions.length === 0 && (
+                <p className="py-8 text-center text-muted-foreground text-sm">
+                  No hay promociones registradas.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif">
-              {editingPromo ? "Editar Promoción" : "Nueva Promoción"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingPromo
-                ? "Modifica los datos."
-                : "Crea una nueva promoción."}
-            </DialogDescription>
+            <DialogTitle className="font-serif">{editingPromo ? "Editar Promoción" : "Nueva Promoción"}</DialogTitle>
+            <DialogDescription>{editingPromo ? "Modifica los datos." : "Crea una nueva promoción."}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Título *</Label>
-              <Input
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Destino *</Label>
-              <Input
-                value={formData.destination}
-                onChange={(e) =>
-                  setFormData({ ...formData, destination: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Descripción *</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-              />
-            </div>
+            <div className="space-y-2"><Label>Título *</Label><Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Destino *</Label><Input value={formData.destination} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Descripción *</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} /></div>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label>Precio Promo</Label>
-                <Input
-                  type="number"
-                  value={formData.promo_price}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      promo_price: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Moneda</Label>
-                <Select
-                  value={formData.currency}
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, currency: val as Currency })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="MXN">MXN</SelectItem>
-                  </SelectContent>
+              <div className="space-y-2"><Label>Precio Promo *</Label><Input type="number" value={formData.promo_price} onChange={(e) => setFormData({ ...formData, promo_price: Number(e.target.value) })} /></div>
+              <div className="space-y-2"><Label>Moneda</Label>
+                <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val as Currency })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="USD">USD</SelectItem><SelectItem value="MXN">MXN</SelectItem></SelectContent>
                 </Select>
               </div>
             </div>
@@ -519,8 +492,7 @@ export default function PromocionesPage() {
                   !formData.title ||
                   !formData.destination ||
                   formData.promo_price < 0
-                }
-              >
+                }>
                 {editingPromo ? "Guardar Cambios" : "Crear Promoción"}
               </Button>
             </div>
@@ -528,5 +500,5 @@ export default function PromocionesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

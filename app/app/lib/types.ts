@@ -147,6 +147,7 @@ export interface Expense {
 
 export interface Promotion {
   id: string
+  order_number: number
   title: string
   description: string
   destination: string
