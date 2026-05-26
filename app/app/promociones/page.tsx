@@ -1,7 +1,7 @@
 "use client"
 
 import { ChangeEvent, useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight, GripVertical, Save } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight, GripVertical, Save, Loader2 } from "lucide-react"
 import { DragDropProvider } from "@dnd-kit/react"
 import { useSortable } from "@dnd-kit/react/sortable"
 import { move } from "@dnd-kit/helpers"
@@ -86,7 +86,7 @@ export default function PromocionesPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
-
+  const [isSaving, setIsSaving] = useState(false)
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "", description: "", destination: "", promo_price: 0,
@@ -238,7 +238,8 @@ export default function PromocionesPage() {
   };
 
   const handleSaveOrder = async () => {
-    try {      
+    try {
+      setIsSaving(true);
       const response = await defaultApiAuth.putPromotionOrder(promotions);
       if (!response) {
         console.warn("Promotions not saved -> ");
@@ -251,6 +252,8 @@ export default function PromocionesPage() {
     } catch (error) {
       console.error("Error saving promotion order -> ", error);
       toast({ title: "Error", description: `No se pudo guardar el orden de las promociones.`, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -421,9 +424,18 @@ export default function PromocionesPage() {
                     "Destinos y paquetes populares" de la landing page.
                   </CardDescription>
                 </div>
-                <Button onClick={handleSaveOrder} className="gap-2 min-w-[140px]">
-                  <Save className="h-4 w-4" />
-                  Guardar orden
+                <Button onClick={handleSaveOrder} disabled={isSaving} className="gap-2 min-w-[140px]">
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Guardar orden
+                    </>
+                  )}
                 </Button>
               </div>
             </CardHeader>
