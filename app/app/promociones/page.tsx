@@ -1,7 +1,10 @@
 "use client"
 
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
 import { Plus, Pencil, Trash2, Search, LayoutGrid, TableIcon, ToggleLeft, ToggleRight, GripVertical, Save } from "lucide-react"
+import { DragDropProvider } from "@dnd-kit/react"
+import { useSortable } from "@dnd-kit/react/sortable"
+import { move } from "@dnd-kit/helpers"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +29,56 @@ const promotionActionEnableDisable = "PROMOTION_ENABLE_DISABLE";
 const promotionActionOrder = "PROMOTION_ORDER";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Sortable item component for dnd-kit
+function SortablePromoItem({ promo, index }: { promo: Promotion; index: number }) {
+  const [element, setElement] = useState<HTMLDivElement | null>(null)
+  const { isDragging } = useSortable({ id: promo.id, index, element })
+
+  return (
+    <div
+      ref={setElement}
+      className={`flex items-center gap-4 rounded-lg border p-3 cursor-grab active:cursor-grabbing transition-all select-none ${
+        isDragging
+          ? "opacity-50 border-primary bg-primary/5 shadow-lg"
+          : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
+      }`}
+    >
+      {/* Index badge */}
+      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+        {index + 1}
+      </span>
+
+      {/* Drag handle */}
+      <GripVertical className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+
+      {/* Thumbnail */}
+      {promo.image_url ? (
+        <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-md">
+          <Image src={apiBaseUrl + promo.image_url} alt={promo.title} fill className="object-cover" />
+        </div>
+      ) : (
+        <div className="h-12 w-16 flex-shrink-0 rounded-md bg-muted" />
+      )}
+
+      {/* Info */}
+      <div className="flex flex-1 flex-col gap-0.5 min-w-0">
+        <span className="font-medium text-foreground truncate">{promo.title}</span>
+        <span className="text-xs text-muted-foreground truncate">{promo.destination}</span>
+      </div>
+
+      {/* Price */}
+      <span className="flex-shrink-0 font-semibold text-primary text-sm">
+        ${promo.promo_price.toLocaleString()} {promo.currency}
+      </span>
+
+      {/* Status badge */}
+      <Badge variant={promo.is_active ? "default" : "secondary"} className="flex-shrink-0">
+        {promo.is_active ? "Activa" : "Inactiva"}
+      </Badge>
+    </div>
+  )
+}
+
 export default function PromocionesPage() {
   const [file, setFile] = useState<File | null>(null)
   const [promotions, setPromotions] = useState<Promotion[]>([])
@@ -33,9 +86,6 @@ export default function PromocionesPage() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null)
-
-  // Drag state
-  const dragIndex = useRef<number | null>(null)
 
   const { user } = useAuth();
   const [formData, setFormData] = useState({
@@ -85,10 +135,7 @@ export default function PromocionesPage() {
 
     if (editingPromo) {
 
-      const obj = {
-        ...formData,
-        id: editingPromo.id
-      };
+      const obj = { ...formData, id: editingPromo.id };
 
       form.append("promotionRequest",
       new Blob(
@@ -113,10 +160,7 @@ export default function PromocionesPage() {
 
     } else {
 
-      const obj = {
-        ...formData,
-        created_by: user?.userId,
-      };
+      const obj = { ...formData, created_by: user?.userId };
 
       form.append("promotionRequest",
       new Blob(
@@ -182,27 +226,16 @@ export default function PromocionesPage() {
       setFile(e.target.files[0])
     }
   };
-
+  
   // --- Drag & Drop handlers ---
-  const handleDragStart = (index: number) => {
-    dragIndex.current = index
-  }
-
-  const handleDragEnter = (index: number) => {
-    if (dragIndex.current === null || dragIndex.current === index) return
-    const from = dragIndex.current
-    dragIndex.current = index
-    setPromotions((prev) => {
-      const updated = [...prev]
-      const [dragged] = updated.splice(from, 1)
-      updated.splice(index, 0, dragged)
-      return updated.map((promo, idx) => ({ ...promo, order_number: idx + 1 })) // Update order_number based on new index
-    })
-  }
-
-  const handleDragEnd = () => {
-    dragIndex.current = null
-  }
+  const handleDragEnd = (event: Parameters<typeof move>[1]) => {
+    setPromotions((items) => {
+      // Reorder items
+      const reorderedItems = move(items, event);
+      // Update order_number
+      return reorderedItems.map((item, index) => ({ ...item, order_number: index + 1}));
+    });
+  };
 
   const handleSaveOrder = async () => {
     try {      
@@ -220,7 +253,6 @@ export default function PromocionesPage() {
       toast({ title: "Error", description: `No se pudo guardar el orden de las promociones.`, variant: "destructive" });
     }
   }
-  // --- End ---
 
   useEffect(() => { 
     const fetchPromotions = async () => {
@@ -396,55 +428,13 @@ export default function PromocionesPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {promotions.map((promo, index) => (
-                  <div
-                    key={promo.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragEnter={() => handleDragEnter(index)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
-                    className="flex items-center gap-4 rounded-lg border border-border bg-background p-3 cursor-grab active:cursor-grabbing hover:border-primary/50 hover:bg-muted/30 transition-all select-none"
-                  >
-                    {/* Index badge */}
-                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                      {index + 1}
-                    </span>
-
-                    {/* Drag handle */}
-                    <GripVertical className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-
-                    {/* Thumbnail */}
-                    {promo.image_url ? (
-                      <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={apiBaseUrl + promo.image_url} alt={promo.title} fill className="object-cover" />
-                      </div>
-                    ) : (
-                      <div className="h-12 w-16 flex-shrink-0 rounded-md bg-muted" />
-                    )}
-
-                    {/* Info */}
-                    <div className="flex flex-1 flex-col gap-0.5 min-w-0">
-                      <span className="font-medium text-foreground truncate">{promo.title}</span>
-                      <span className="text-xs text-muted-foreground truncate">{promo.destination}</span>
-                    </div>
-
-                    {/* Price */}
-                    <span className="flex-shrink-0 font-semibold text-primary text-sm">
-                      ${promo.promo_price.toLocaleString()} {promo.currency}
-                    </span>
-
-                    {/* Status badge */}
-                    <Badge
-                      variant={promo.is_active ? "default" : "secondary"}
-                      className="flex-shrink-0"
-                    >
-                      {promo.is_active ? "Activa" : "Inactiva"}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+              <DragDropProvider onDragEnd={handleDragEnd}>
+                <div className="space-y-2">
+                  {promotions.map((promo, index) => (
+                    <SortablePromoItem key={promo.id} promo={promo} index={index} />
+                  ))}
+                </div>
+              </DragDropProvider>
 
               {promotions.length === 0 && (
                 <p className="py-8 text-center text-muted-foreground text-sm">
