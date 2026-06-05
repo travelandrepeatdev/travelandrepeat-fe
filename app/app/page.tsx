@@ -72,6 +72,7 @@ export default function App() {
       {/* Stats Cards */}
       {hasPermissionStats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <a href="/app/clientes">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -84,7 +85,9 @@ export default function App() {
               <p className="text-xs text-muted-foreground">Total registrados</p>
             </CardContent>
           </Card>
+          </a>
 
+          <a href="/app/proveedores">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -99,7 +102,9 @@ export default function App() {
               <p className="text-xs text-muted-foreground">Total activos</p>
             </CardContent>
           </Card>
+          </a>
 
+          <a href="/app/promociones">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -116,7 +121,9 @@ export default function App() {
               </p>
             </CardContent>
           </Card>
+          </a>
 
+          <a href="/app/blogs">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -131,6 +138,7 @@ export default function App() {
               <p className="text-xs text-muted-foreground">Publicados</p>
             </CardContent>
           </Card>
+          </a>
         </div>
       )}
 

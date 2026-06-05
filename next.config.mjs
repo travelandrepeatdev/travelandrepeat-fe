@@ -7,7 +7,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  allowedDevOrigins: ['127.0.0.1', 'localhost', '192.168.1.29'],
+  allowedDevOrigins: ['127.0.0.1', 'localhost', '192.168.1.29'], // see and activate also .env.local
 
   async headers() {
     return [
