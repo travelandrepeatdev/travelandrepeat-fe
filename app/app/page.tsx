@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Building2, DollarSign, Receipt, Megaphone, TrendingUp, TrendingDown, FileText } from "lucide-react"
+import { Users, Building2, DollarSign, Megaphone, TrendingUp, TrendingDown, FileText } from "lucide-react"
 import { mockCommissions, mockExpenses, mockAuditLogs } from "./lib/mock-data"
 import { Dashboard0, Dashboard1, Dashboard2 } from "./lib/types";
 import { useEffect, useState } from "react";
