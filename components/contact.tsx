@@ -36,7 +36,7 @@ export function Contact() {
               size="lg"
               className="bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-90 text-white text-lg px-8 w-full sm:w-auto"
             >
-              <a href="https://www.instagram.com/travel.and.repeat.by.eva" target="_blank" className="flex items-center justify-center w-full h-full">
+              <a href="https://www.instagram.com/travelrepeat.mx" target="_blank" className="flex items-center justify-center w-full h-full">
               <Instagram className="mr-2 h-5 w-5" />
               Instagram
               </a>
