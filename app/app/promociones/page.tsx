@@ -131,7 +131,9 @@ export default function PromocionesPage() {
   const handleSave = async () => {
 
     const form = new FormData()
-    form.append("image", !file ? "" : file)
+    if (file) {
+      form.append("image", file)
+    }
 
     if (editingPromo) {
 
@@ -482,6 +484,12 @@ export default function PromocionesPage() {
             <div className="space-y-2">
               <Label>Subir imagen</Label>
               <Input type="file" onChange={handleFileChange} accept="image/*" />
+              {editingPromo && formData.image_url && !file && (
+                <p className="text-sm text-muted-foreground">Imagen actual: {formData.image_url.split("/").pop()}</p>
+              )}
+              {file && (
+                <p className="text-sm text-muted-foreground">Nueva imagen: {file.name}</p>
+              )}
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
@@ -490,7 +498,6 @@ export default function PromocionesPage() {
               <Button
                 onClick={handleSave}
                 disabled={
-                  !file ||
                   !formData.title ||
                   !formData.destination ||
                   formData.promo_price < 0

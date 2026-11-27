@@ -80,7 +80,9 @@ export default function BlogsPage() {
   const handleSave = async () => {
 
     const form = new FormData()
-    form.append("image", !file ? "" : file);
+    if (file) {
+      form.append("image", file);
+    }
 
     if (editingBlog) {
 
@@ -302,24 +304,31 @@ export default function BlogsPage() {
               <Label>Slug</Label>
               <Input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="font-mono text-sm" />
             </div>
-            <div className="space-y-2"><Label>Extracto *</Label><Textarea value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} /></div>
+            <div className="space-y-2"><Label>Extracto *</Label><Input value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} /></div>
             <div className="space-y-2"><Label>Contenido *</Label><Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={10} className="font-mono text-sm" /></div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Imagen de portada (URL)</Label>
-                <Input type="file" onChange={handleFileChange} accept="image/*" />
-                {/* <Input value={formData.cover_image_url} onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })} placeholder="/imagen.jpg" /> */}
-              </div>
+            <div className="grid gap-4 sm:grid-cols-1">
+
               <div className="space-y-2"><Label>Estado</Label>
                 <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val as BlogStatus })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="Borrador">Borrador</SelectItem><SelectItem value="Publicado">Publicado</SelectItem></SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Imagen de portada (URL)</Label>
+                <Input type="file" onChange={handleFileChange} accept="image/*" />
+                {editingBlog && formData.cover_image_url && !file && (
+                  <p className="text-sm text-muted-foreground">Imagen actual: {formData.cover_image_url.split("/").pop()}</p>
+                )}
+                {file && (
+                  <p className="text-sm text-muted-foreground">Nueva imagen: {file.name}</p>
+                )}
+              </div>
+              
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={!formData.title || !formData.excerpt || !formData.content || !file}>
+              <Button onClick={handleSave} disabled={!formData.title || !formData.excerpt || !formData.content}>
                 {editingBlog ? "Guardar Cambios" : "Crear Artículo"}
               </Button>
             </div>
